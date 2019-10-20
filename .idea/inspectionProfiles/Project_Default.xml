@@ -1,0 +1,16 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="tensorflow_core.python.keras.api._v2.keras.layers.Flatten" />
+          <option value="tensorflow_core.python.keras.api._v2.keras.layers.*" />
+          <option value="tensorflow_core._api.v2.nn.*" />
+          <option value="tensorflow_core._api.v2.random.*" />
+          <option value="tensorflow_core.python.keras.api._v2.keras.backend.*" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
