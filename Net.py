@@ -45,7 +45,6 @@ class Net:
         # self.model.save(f'net{date}.h5')
 
     def predict(self, x_input):
-        print(f'x_input: {x_input}')
         predicted = self.model.predict(x_input)
         predicted = [x / sum(predicted[0]) for x in predicted[0]]
         random_num = random.random()
@@ -68,5 +67,7 @@ def crps_loss(y_true, y_pred):
     yards = K.arange(-99, 100, dtype='float32')
     ret = K.switch(yards >= y_true, y_pred - 1, y_pred)
     ret = K.square(ret)
-    K.print_tensor(ret)
-    return K.sum(ret)
+    # tf.print('Ret:', ret, summarize=100000)
+    k_sum = K.sum(ret)
+    # tf.print('K_sum', k_sum/200)
+    return k_sum/200

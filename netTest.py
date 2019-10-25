@@ -19,7 +19,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_something(self):
         self.net.train()
-        prediction = self.net.predict(np.array(self.x_train[0]))
+        prediction = self.net.predict(np.asarray(self.x_train[:1]))
         print(f'prediction: {prediction}')
         self.assertEqual(prediction, np.where(self.y_train[0] == 1)[0][0])
 
