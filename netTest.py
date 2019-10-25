@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
         df_output = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl_yards.csv', sep=',', header=None)
         self.x_train = df_input.values
         self.y_train = df_output.values
-        self.net = Net(self.x_train, self.y_train, number_of_epochs=10000)
+        self.net = Net(self.x_train, self.y_train, number_of_epochs=500)
 
     def test_something(self):
         self.net.train()
