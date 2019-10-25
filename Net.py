@@ -1,7 +1,9 @@
 import random
 from datetime import datetime
+
 import numpy as np
 import tensorflow as tf
+from keras import backend as K
 
 
 class Net:
@@ -31,7 +33,7 @@ class Net:
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
-                           loss='categorical_crossentropy',
+                           loss=crps_loss,
                            metrics=['accuracy'])
 
     def train(self):
@@ -39,20 +41,32 @@ class Net:
                        self.y_train,
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
-        date = datetime.now().strftime("%m%d%y%H%M%S")
+        date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
         # self.model.save(f'net{date}.h5')
 
     def predict(self, x_input):
-        predicted = self.model.predict([x_input])
+        print(f'x_input: {x_input}')
+        predicted = self.model.predict(x_input)
         predicted = [x / sum(predicted[0]) for x in predicted[0]]
         random_num = random.random()
         cutoff = 0
         for i in range(10):
             for j in range(10):
-                print(format(round(np.asarray(predicted)[i*10+j], 4), '.4f') + '  ', end='')
+                print(format(round(np.asarray(predicted)[i * 10 + j], 4), '.4f') + '  ', end='')
             print()
         for i in range(len(predicted)):
             prob = predicted[i]
             cutoff += prob
             if random_num <= cutoff:
                 return i
+
+
+@tf.function
+def crps_loss(y_true, y_pred):
+    y_true = K.cast(y_true, dtype='float32')
+    y_pred = K.cast(y_pred, dtype='float32')
+    yards = K.arange(-99, 100, dtype='float32')
+    ret = K.switch(yards >= y_true, y_pred - 1, y_pred)
+    ret = K.square(ret)
+    K.print_tensor(ret)
+    return K.sum(ret)
