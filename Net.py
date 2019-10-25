@@ -1,9 +1,11 @@
 import random
+import sys
 from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+np.set_printoptions(suppress=True)
 
 
 class Net:
@@ -42,17 +44,13 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        # self.model.save(f'net{date}.h5')
+        self.model.save(f'net{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
         predicted = [x / sum(predicted[0]) for x in predicted[0]]
         random_num = random.random()
         cutoff = 0
-        for i in range(10):
-            for j in range(10):
-                print(format(round(np.asarray(predicted)[i * 10 + j], 4), '.4f') + '  ', end='')
-            print()
         for i in range(len(predicted)):
             prob = predicted[i]
             cutoff += prob
@@ -67,7 +65,6 @@ def crps_loss(y_true, y_pred):
     yards = K.arange(-99, 100, dtype='float32')
     ret = K.switch(yards >= y_true, y_pred - 1, y_pred)
     ret = K.square(ret)
-    # tf.print('Ret:', ret, summarize=100000)
-    k_sum = K.sum(ret)
-    # tf.print('K_sum', k_sum/200)
-    return k_sum/200
+    per_play_loss = K.sum(ret, axis=1)
+    total_loss = K.sum(per_play_loss) / 199
+    return total_loss

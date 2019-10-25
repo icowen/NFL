@@ -11,7 +11,8 @@ with open('dist_ang_radial_tang_x_y_disfromyl_yards.csv', 'w', newline='') as f:
     c = csv.writer(f, delimiter=',')
     for play in yards_gained.values:
         y = [0 for i in range(199)]
-        y[99 + play] = 1
+        for i in range(99 + play, 199):
+            y[i] = 1
         c.writerow(y)
 # for c in d.columns:
 #     if all(k not in c for k in keep):
