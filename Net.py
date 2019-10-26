@@ -51,7 +51,7 @@ class Net:
                                                         monitor='loss',
                                                         verbose=1,
                                                         save_best_only=True,
-                                                        period=1)
+                                                        save_freq=100*len(self.x_train))
         callbacks_list = [checkpoint]
         self.model.fit(self.x_train,
                        self.y_train,
