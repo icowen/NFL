@@ -1,10 +1,10 @@
 import random
-import sys
 from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+
 np.set_printoptions(suppress=True)
 
 
@@ -18,13 +18,18 @@ class Net:
                  x_train,
                  y_train,
                  number_of_epochs=10,
-                 batch_size=100):
+                 batch_size=100,
+                 load_filename=None):
         self.model = tf.keras.Sequential()
         self.x_train = x_train
         self.y_train = y_train
         self.number_of_epochs = number_of_epochs
         self.batch_size = batch_size
-        self.set_up_model()
+        self.load_filename = load_filename
+        if self.load_filename:
+            self.load_model()
+        else:
+            self.set_up_model()
 
     def set_up_model(self):
         num_of_input_neurons = len(self.x_train[0])
@@ -44,11 +49,17 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        self.model.save(f'net_trained_with_1000_on_{date}.h5')
+        # self.model.save(f'net_trained_with_1000_on_{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
         return predicted
+
+    def load_model(self):
+        self.model = tf.keras.models.load_model(self.load_filename)
+        self.model.compile(optimizer='adam',
+                           loss=crps_loss,
+                           metrics=['accuracy'])
 
 
 @tf.function
