@@ -13,12 +13,13 @@ class MyTestCase(unittest.TestCase):
     def setUp(self):
         df_input = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl.csv', sep=',', header=None)
         df_output = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl_yards.csv', sep=',', header=None)
-        load_filename = 'binary_crossentropy_net_trained_with_1000_on_10-26-19_14_06_15.h5'
+        load_filename = 'crps_net_trained_with_1000_on_10-26-19_15_42_55.h5'
         self.x_train = df_input.values
         self.y_train = df_output.values
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=1000)
+                       number_of_epochs=9000,
+                       load_filename=load_filename)
 
     def test_something(self):
         self.net.train()

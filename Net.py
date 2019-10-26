@@ -1,12 +1,10 @@
 import random
-import sys
 from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
 
-tf.debugging.set_log_device_placement(True)
 np.set_printoptions(suppress=True)
 
 
@@ -51,7 +49,7 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        self.model.save(f'crps_net_trained_with_1000_on_{date}.h5')
+        self.model.save(f'crps_net_trained_with_10000_on_{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
