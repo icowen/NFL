@@ -1,10 +1,12 @@
 import random
+import sys
 from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
 
+tf.debugging.set_log_device_placement(True)
 np.set_printoptions(suppress=True)
 
 
@@ -49,7 +51,7 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        self.model.save(f'binary_crossentropy_net_trained_with_1000_on_{date}.h5')
+        self.model.save(f'crps_net_trained_with_1000_on_{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
@@ -68,13 +70,12 @@ def crps_loss(y_true, y_pred):
     # tf.print('y_true: ', y_true, summarize=-1, output_stream=sys.stderr)
     y_pred = K.cast(y_pred, dtype='float32')
     # tf.print('y_pred: ', y_pred, summarize=-1, output_stream=sys.stderr)
-    yards = K.arange(-99, 100, dtype='float32')
-    # tf.print('yards: ', yards, summarize=-1, output_stream=sys.stderr)
-    ret = K.switch(yards >= y_true, y_pred - 1, y_pred)
+    ret = K.switch(y_true >= 1, y_pred - 1, y_pred)
     # tf.print('ret: ', ret, summarize=-1, output_stream=sys.stderr)
     ret = K.square(ret)
+    # tf.print('ret_squared: ', ret, summarize=-1, output_stream=sys.stderr)
     per_play_loss = K.sum(ret, axis=1)
-    # tf.print('per_play_loss: ', per_play_loss)
-    total_loss = K.sum(per_play_loss) / 199
+    # tf.print('per_play_loss: ', per_play_loss, summarize=-1, output_stream=sys.stderr)
+    total_loss = K.mean(per_play_loss)
     # tf.print('total_loss: ', total_loss)
     return total_loss
