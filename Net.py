@@ -1,4 +1,5 @@
 import random
+import sys
 from datetime import datetime
 
 import numpy as np
@@ -34,22 +35,30 @@ class Net:
     def set_up_model(self):
         num_of_input_neurons = len(self.x_train[0])
         num_of_output_neurons = len(self.y_train[0])
-        self.model.add(tf.keras.layers.Flatten())
+        self.model.add(tf.keras.layers.Flatten(input_shape=(num_of_input_neurons,)))
         self.model.add(tf.keras.layers.Dense(num_of_input_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
-                           loss='binary_crossentropy',
+                           loss=crps_loss,
                            metrics=['accuracy'])
 
     def train(self):
+        date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
+        path = f'crps_net_trained_with_10000_on_{date}.h5'
+        checkpoint = tf.keras.callbacks.ModelCheckpoint(path,
+                                                        monitor='loss',
+                                                        verbose=1,
+                                                        save_best_only=True,
+                                                        period=1)
+        callbacks_list = [checkpoint]
         self.model.fit(self.x_train,
                        self.y_train,
                        epochs=self.number_of_epochs,
-                       batch_size=self.batch_size)
-        date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        self.model.save(f'crps_net_trained_with_10000_on_{date}.h5')
+                       batch_size=self.batch_size,
+                       callbacks=callbacks_list)
+        self.model.save(path)
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
