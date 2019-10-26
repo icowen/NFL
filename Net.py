@@ -44,7 +44,7 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        self.model.save(f'net{date}.h5')
+        # self.model.save(f'net{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
@@ -61,10 +61,16 @@ class Net:
 @tf.function
 def crps_loss(y_true, y_pred):
     y_true = K.cast(y_true, dtype='float32')
+    # tf.print('y_true: ', y_true)
     y_pred = K.cast(y_pred, dtype='float32')
+    # tf.print('y_pred: ', y_pred)
     yards = K.arange(-99, 100, dtype='float32')
+    # tf.print('yards: ', yards)
     ret = K.switch(yards >= y_true, y_pred - 1, y_pred)
+    # tf.print('ret: ', ret)
     ret = K.square(ret)
     per_play_loss = K.sum(ret, axis=1)
+    # tf.print('per_play_loss: ', per_play_loss)
     total_loss = K.sum(per_play_loss) / 199
+    # tf.print('total_loss: ', total_loss)
     return total_loss
