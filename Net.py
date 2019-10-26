@@ -54,13 +54,13 @@ class Net:
 @tf.function
 def crps_loss(y_true, y_pred):
     y_true = K.cast(y_true, dtype='float32')
-    # tf.print('y_true: ', y_true)
+    # tf.print('y_true: ', y_true, summarize=-1, output_stream=sys.stderr)
     y_pred = K.cast(y_pred, dtype='float32')
-    # tf.print('y_pred: ', y_pred)
+    # tf.print('y_pred: ', y_pred, summarize=-1, output_stream=sys.stderr)
     yards = K.arange(-99, 100, dtype='float32')
-    # tf.print('yards: ', yards)
+    # tf.print('yards: ', yards, summarize=-1, output_stream=sys.stderr)
     ret = K.switch(yards >= y_true, y_pred - 1, y_pred)
-    # tf.print('ret: ', ret)
+    # tf.print('ret: ', ret, summarize=-1, output_stream=sys.stderr)
     ret = K.square(ret)
     per_play_loss = K.sum(ret, axis=1)
     # tf.print('per_play_loss: ', per_play_loss)
