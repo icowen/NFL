@@ -1,3 +1,4 @@
+import numpy as np
 import random
 import unittest
 
@@ -21,12 +22,13 @@ class MyTestCase(unittest.TestCase):
 
     def test_something(self):
         self.net.train()
-        # prediction = self.net.predict(np.asarray(self.x_train[:10]))
-        # for x, y in zip(self.y_train[:10], prediction[:10]):
-        #     i = -99
-        #     for a, b in zip(x, y):
-        #         print(f'i: {i}; Actual: {round(a, 5)}; Predicted: {b}')
-        #         i += 1
+        prediction = self.net.predict(np.asarray(self.x_train[:10]))
+        for x, y in zip(self.y_train[:10], prediction[:10]):
+            i = -99
+            for a, b in zip(x, y):
+                print(f'i: {i}; Actual: {round(a, 5)}; Predicted: {b}')
+                i += 1
+            print('\n-------------------------\n')
         self.assertEqual(all(self.y_train[0]), False)
 
 
