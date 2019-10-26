@@ -18,7 +18,7 @@ class MyTestCase(unittest.TestCase):
         self.y_train = df_output.values
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=1)
+                       number_of_epochs=1000)
 
     def test_something(self):
         self.net.train()
