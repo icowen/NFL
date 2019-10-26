@@ -44,18 +44,11 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        # self.model.save(f'net{date}.h5')
+        self.model.save(f'net_trained_with_1000_on_{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
-        predicted = [x / sum(predicted[0]) for x in predicted[0]]
-        random_num = random.random()
-        cutoff = 0
-        for i in range(len(predicted)):
-            prob = predicted[i]
-            cutoff += prob
-            if random_num <= cutoff:
-                return i
+        return predicted
 
 
 @tf.function
