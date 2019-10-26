@@ -40,7 +40,7 @@ class Net:
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
-                           loss=crps_loss,
+                           loss='binary_crossentropy',
                            metrics=['accuracy'])
 
     def train(self):
@@ -49,7 +49,7 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size)
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        # self.model.save(f'net_trained_with_1000_on_{date}.h5')
+        self.model.save(f'binary_crossentropy_net_trained_with_1000_on_{date}.h5')
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
