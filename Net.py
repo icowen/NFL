@@ -18,7 +18,7 @@ class Net:
                  x_train,
                  y_train,
                  number_of_epochs=10,
-                 batch_size=10):
+                 batch_size=100):
         self.model = tf.keras.Sequential()
         self.x_train = x_train
         self.y_train = y_train
