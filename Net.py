@@ -46,7 +46,7 @@ class Net:
 
     def train(self):
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        path = f'crps_net_trained_with_10000_on_{date}.h5'
+        path = f'net_configurations/crps_net_trained_with_10000_on_{date}.h5'
         checkpoint = tf.keras.callbacks.ModelCheckpoint(path,
                                                         monitor='loss',
                                                         verbose=1,
@@ -65,7 +65,7 @@ class Net:
         return predicted
 
     def load_model(self):
-        self.model = tf.keras.models.load_model(self.load_filename)
+        self.model = tf.keras.models.load_model(self.load_filename, custom_objects={'crps_loss': crps_loss})
         self.model.compile(optimizer='adam',
                            loss=crps_loss,
                            metrics=['accuracy'])
