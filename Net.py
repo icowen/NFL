@@ -58,7 +58,7 @@ class Net:
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size,
                        callbacks=callbacks_list)
-        self.model.save(path)
+        # self.model.save(path)
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)

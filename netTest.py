@@ -24,11 +24,10 @@ class MyTestCase(unittest.TestCase):
                                                                                   shuffle=True)
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=1000,
-                       load_filename=load_filename)
+                       number_of_epochs=1000)
 
     def test_train_and_predict(self):
-        # self.net.train()
+        self.net.train()
         prediction = self.net.predict(np.asarray(self.x_valid))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
             for x, y in zip(self.y_valid, prediction):
