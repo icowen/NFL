@@ -1,5 +1,4 @@
 import random
-import sys
 from datetime import datetime
 
 import numpy as np
@@ -51,8 +50,9 @@ class Net:
                                                         monitor='loss',
                                                         verbose=1,
                                                         save_best_only=True,
-                                                        save_freq=100*len(self.x_train))
+                                                        save_freq=100 * len(self.x_train))
         callbacks_list = [checkpoint]
+
         self.model.fit(self.x_train,
                        self.y_train,
                        epochs=self.number_of_epochs,
@@ -74,15 +74,9 @@ class Net:
 @tf.function
 def crps_loss(y_true, y_pred):
     y_true = K.cast(y_true, dtype='float32')
-    # tf.print('y_true: ', y_true, summarize=-1, output_stream=sys.stderr)
     y_pred = K.cast(y_pred, dtype='float32')
-    # tf.print('y_pred: ', y_pred, summarize=-1, output_stream=sys.stderr)
     ret = K.switch(y_true >= 1, y_pred - 1, y_pred)
-    # tf.print('ret: ', ret, summarize=-1, output_stream=sys.stderr)
     ret = K.square(ret)
-    # tf.print('ret_squared: ', ret, summarize=-1, output_stream=sys.stderr)
     per_play_loss = K.sum(ret, axis=1)
-    # tf.print('per_play_loss: ', per_play_loss, summarize=-1, output_stream=sys.stderr)
     total_loss = K.mean(per_play_loss)
-    # tf.print('total_loss: ', total_loss)
     return total_loss
