@@ -17,12 +17,16 @@ class Net:
     def __init__(self,
                  x_train,
                  y_train,
+                 x_valid,
+                 y_valid,
                  number_of_epochs=10,
                  batch_size=100,
                  load_filename=None):
         self.model = tf.keras.Sequential()
         self.x_train = x_train
         self.y_train = y_train
+        self.x_valid = x_valid
+        self.y_valid = y_valid
         self.number_of_epochs = number_of_epochs
         self.batch_size = batch_size
         self.load_filename = load_filename
@@ -55,10 +59,10 @@ class Net:
 
         self.model.fit(self.x_train,
                        self.y_train,
+                       validation_data=(self.x_valid, self.y_valid),
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size,
                        callbacks=callbacks_list)
-        # self.model.save(path)
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)

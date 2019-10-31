@@ -24,7 +24,9 @@ class MyTestCase(unittest.TestCase):
                                                                                   shuffle=True)
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=1000)
+                       self.x_valid,
+                       self.y_valid,
+                       number_of_epochs=100)
 
     def test_train_and_predict(self):
         self.net.train()
