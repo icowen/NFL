@@ -14,11 +14,11 @@ with open('dist_ang_radial_tang_x_y_disfromyl_yards.csv', 'w', newline='') as f:
         for i in range(99 + play, 199):
             y[i] = 1
         c.writerow(y)
-# for c in d.columns:
-#     if all(k not in c for k in keep):
-#         d = d.drop(c, axis=1)
-# data = d.values
-# with open('dist_ang_radial_tang_x_y_disfromyl.csv', 'w', newline='') as f:
-#     c = csv.writer(f, delimiter=',')
-#     for play in data:
-#         c.writerow(play)
+for c in d.columns:
+    if all(k not in c for k in keep):
+        d = d.drop(c, axis=1)
+data = d.values
+with open('dist_ang_radial_tang_x_y_disfromyl.csv', 'w', newline='') as f:
+    c = csv.writer(f, delimiter=',')
+    for play in data:
+        c.writerow(play)
