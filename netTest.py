@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
-from Net import Net
+from Net import Net, crps_loss
 
 random.seed(3)
 
@@ -26,11 +26,11 @@ class MyTestCase(unittest.TestCase):
                        self.y_train,
                        self.x_valid,
                        self.y_valid,
-                       number_of_epochs=100)
+                       number_of_epochs=10)
 
     def test_train_and_predict(self):
-        self.net.train()
-        prediction = self.net.predict(np.asarray(self.x_valid))
+        # self.net.train()
+        prediction = self.net.predict(np.asarray(self.x_valid[:10]))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
             for x, y in zip(self.y_valid, prediction):
                 i = -99
