@@ -25,9 +25,9 @@ class MyTestCase(unittest.TestCase):
         #                                                                           y_train,
         #                                                                           test_size=0.2,
         #                                                                           shuffle=True)
-        print(f'x_train: {x_train}')
-        self.net = Net(x_train,
-                       y_train,
+        print(f'x_train: {self.x_train}')
+        self.net = Net(self.x_train,
+                       self.y_train,
                        number_of_epochs=100)
 
     def test_train_and_predict(self):
