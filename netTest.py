@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
+
+import CleanData
 from Net import Net, crps_loss
 
 random.seed(3)
@@ -13,15 +15,18 @@ random.seed(3)
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        df_input = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl.csv', sep=',', header=None)
-        df_output = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl_yards.csv', sep=',', header=None)
-        load_filename = 'net_configurations/crps_net_trained_with_10000_on_10-26-19_18_35_37.h5'
-        x_train = df_input.values
-        y_train = df_output.values
+        # df_input = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl.csv', sep=',', header=None)
+        # df_output = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl_yards.csv', sep=',', header=None)
+        # load_filename = 'net_configurations/crps_net_trained_with_10000_on_10-26-19_18_35_37.h5'
+        x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(44))
+        x_train = np.asarray(x_train.values)
+        y_train = np.asarray(y_train.values)
+        print(f'x_train: {x_train[0]}')
         self.x_train, self.x_valid, self.y_train, self.y_valid = train_test_split(x_train,
                                                                                   y_train,
                                                                                   test_size=0.2,
                                                                                   shuffle=True)
+        print(f'x_train: {x_train}')
         self.net = Net(self.x_train,
                        self.y_train,
                        self.x_valid,
@@ -29,7 +34,7 @@ class MyTestCase(unittest.TestCase):
                        number_of_epochs=10)
 
     def test_train_and_predict(self):
-        # self.net.train()
+        self.net.train()
         prediction = self.net.predict(np.asarray(self.x_valid[:10]))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
             for x, y in zip(self.y_valid, prediction):

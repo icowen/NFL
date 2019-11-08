@@ -123,7 +123,7 @@ def get_output_data(df):
 def convert_to_training_values(data_by_game):
     keep = ['dist_from_RB', 'ang_from_RB', 'X_new', 'Y_new',
             'RB_Dis_YL', 'tangential_speed', 'radial_speed', 'Orientation_new', 'Dir_new',
-            "YardLine", "Quarter", "GameClock", "Down", "Distance"]
+            "YardLine", "Quarter", "Down", "Distance"]
     yards_gained = data_by_game["Yards"]
     y_train = []
     for play in yards_gained.values:
@@ -134,15 +134,16 @@ def convert_to_training_values(data_by_game):
     for c in data_by_game.columns:
         if all(k not in c for k in keep):
             data_by_game = data_by_game.drop(c, axis=1)
-    return data_by_game, y_train
+
+    return data_by_game, pd.DataFrame(y_train)
 
 
 def convert_data(df):
     df = clean_data(df)
     df = get_output_data(df)
     x_train, y_train = convert_to_training_values(df)
-    x_train = pd.DataFrame(x_train)
-    x_train.to_csv(r'x_train.csv', index=None)
-    y_train = pd.DataFrame(y_train)
-    y_train.to_csv(r'y_train.csv', index=None)
+    # x_train = pd.DataFrame(x_train)
+    # x_train.to_csv(r'x_train.csv', index=None)
+    # y_train = pd.DataFrame(y_train)
+    # y_train.to_csv(r'y_train.csv', index=None)
     return x_train, y_train

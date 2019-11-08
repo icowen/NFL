@@ -161,7 +161,6 @@ def test_pid_works():
     np.testing.assert_approx_equal(output.iloc[0]["Quarter"], expected_df.loc["Quarter"])
     np.testing.assert_approx_equal(output.iloc[0]["Down"], expected_df.loc["Down"])
     np.testing.assert_approx_equal(output.iloc[0]["Distance"], expected_df.loc["Distance"])
-    np.testing.assert_equal(output.iloc[0]["GameClock"], expected_df.loc["GameClock"])
 
 
 if __name__ == '__main__':
