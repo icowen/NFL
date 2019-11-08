@@ -19,8 +19,8 @@ class MyTestCase(unittest.TestCase):
         # df_output = pd.read_csv('data/dist_ang_radial_tang_x_y_disfromyl_yards.csv', sep=',', header=None)
         # load_filename = 'net_configurations/crps_net_trained_with_10000_on_10-26-19_18_35_37.h5'
         x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(44))
-        x_train = np.asarray(x_train.values)
-        y_train = np.asarray(y_train.values)
+        self.x_train = np.asarray(x_train.values)
+        self.y_train = np.asarray(y_train.values)
         # self.x_train, self.x_valid, self.y_train, self.y_valid = train_test_split(x_train,
         #                                                                           y_train,
         #                                                                           test_size=0.2,
@@ -32,9 +32,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_train_and_predict(self):
         self.net.train()
-        prediction = self.net.predict(np.asarray(self.x_valid[:10]))
+        prediction = self.net.predict(np.asarray(self.x_train[:10]))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
-            for x, y in zip(self.y_valid, prediction):
+            for x, y in zip(self.y_train, prediction):
                 i = -99
                 for a, b in zip(x, y):
                     f.write('i: {: 3d}; Actual: {:d}; Predicted: {:f}\n'.format(i, a, b))
