@@ -32,7 +32,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_train_and_predict(self):
         self.net.train()
-        prediction = self.net.predict(np.asarray(self.x_train[:10]))
+        prediction = self.net.predict(np.asarray(self.x_train[-10:]))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
             for x, y in zip(self.y_train, prediction):
                 i = -99
