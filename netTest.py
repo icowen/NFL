@@ -21,17 +21,14 @@ class MyTestCase(unittest.TestCase):
         x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(44))
         x_train = np.asarray(x_train.values)
         y_train = np.asarray(y_train.values)
-        print(f'x_train: {x_train[0]}')
-        self.x_train, self.x_valid, self.y_train, self.y_valid = train_test_split(x_train,
-                                                                                  y_train,
-                                                                                  test_size=0.2,
-                                                                                  shuffle=True)
+        # self.x_train, self.x_valid, self.y_train, self.y_valid = train_test_split(x_train,
+        #                                                                           y_train,
+        #                                                                           test_size=0.2,
+        #                                                                           shuffle=True)
         print(f'x_train: {x_train}')
-        self.net = Net(self.x_train,
-                       self.y_train,
-                       self.x_valid,
-                       self.y_valid,
-                       number_of_epochs=10)
+        self.net = Net(x_train,
+                       y_train,
+                       number_of_epochs=100)
 
     def test_train_and_predict(self):
         self.net.train()

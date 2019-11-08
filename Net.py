@@ -17,16 +17,12 @@ class Net:
     def __init__(self,
                  x_train,
                  y_train,
-                 x_valid,
-                 y_valid,
                  number_of_epochs=10,
                  batch_size=100,
                  load_filename=None):
         self.model = tf.keras.Sequential()
         self.x_train = x_train
         self.y_train = y_train
-        self.x_valid = x_valid
-        self.y_valid = y_valid
         self.number_of_epochs = number_of_epochs
         self.batch_size = batch_size
         self.load_filename = load_filename
@@ -50,16 +46,20 @@ class Net:
     def train(self):
         date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
         path = f'net_configurations/crps_net_trained_with_10000_on_{date}.h5'
-        checkpoint = tf.keras.callbacks.ModelCheckpoint(path,
-                                                        monitor='loss',
-                                                        verbose=1,
-                                                        save_best_only=True,
-                                                        save_freq=100 * len(self.x_train))
-        callbacks_list = [checkpoint]
+        # checkpoint = tf.keras.callbacks.ModelCheckpoint(path,
+        #                                                 monitor='loss',
+        #                                                 verbose=1,
+        #                                                 save_best_only=True,
+        #                                                 save_freq=100 * len(self.x_train))
+        validation_overfitting = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                                  min_delta=0,
+                                                                  patience=2,
+                                                                  verbose=0, mode='auto')
+        callbacks_list = [validation_overfitting]
 
         self.model.fit(self.x_train,
                        self.y_train,
-                       validation_data=(self.x_valid, self.y_valid),
+                       validation_split=.2,
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size,
                        callbacks=callbacks_list)
