@@ -159,7 +159,7 @@ def get_output_data(df):
             play = pd.concat([off_data, def_data], axis=1)
             rusher_data = df.loc[(df["PlayId"] == pid) & (df["NflId"] == df["NflIdRusher"])].reset_index()
             rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: 100 - x["X"] if x["X"] > 50 else x["X"], axis=1)
-            rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: 53.3 - x["Y"] if x["X"] > 50 else x["Y"], axis=1)
+            rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: 160/3 - x["Y"] if x["X"] > 50 else x["Y"], axis=1)
             rusher_data.loc[:, "RB_Dis_YL"] = rusher_data.apply(lambda x: abs(x["X_new"] - x["YardLine"]), axis=1)
             play = pd.concat([play, rusher_data], axis=1)
             data_by_game = data_by_game.append(play)
