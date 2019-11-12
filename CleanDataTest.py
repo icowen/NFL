@@ -1,4 +1,3 @@
-import math
 import sys
 import unittest
 
@@ -6,19 +5,13 @@ import numpy as np
 import pandas as pd
 
 import CleanData
-import matplotlib.pyplot as plt
 
 pd.set_option('display.max_columns', None, 'display.max_rows', None)
 
 input_df = pd.read_csv("data/train.csv", header=0)
-
-sys.stderr.write(f'input_df: {input_df.head(22)}')
-
 df = CleanData.clean_data(input_df.head(22))
-sys.stderr.write(f'df: {df}')
-
-
 output, y_train = CleanData.convert_data(df)
+y_train = y_train.values
 
 
 # def convert_to_rect(R, theta, dx, dy):
@@ -126,6 +119,12 @@ def test_distance():
     np.testing.assert_array_equal(df["Distance"].head(), [2, 2, 2, 2, 2])
 
 
+def test_y_train():
+    np.testing.assert_equal(len(y_train[0]), 115)
+    np.testing.assert_equal(y_train[0][22], 0)
+    np.testing.assert_equal(y_train[0][23], 1)
+
+
 def test_pid_works():
     expected = [1, 2.02E+13, 5.194274387, 4.408352625, 4.764923391, 6.143384434, 3.810751889, 4.708374723,
                 6.029588967, 4.932824065, 4.162959332, 4.66404336, 4.445353605, 1.897172897, 3.213849285,
@@ -145,7 +144,8 @@ def test_pid_works():
                 1.227772386, 1.348619768, -0.332279565, -0.343511046, -1.739928545, -0.686682726, -1.290382832,
                 -0.056044231, 0.952888917, 4.23121523, -0.991510982, -1.039875878, 0.771485768, -1.460137035,
                 -0.657456203, -0.726957243, -1.106757492, -1.709081345, -0.998199735, -2.935867448, -1.851190421,
-                -2.05150144, 2017090700, 'home', 31.25, 22.77, 21.25, 22.77, 13.75, 3.63, 3.35, 0.38, 161.98, 245.74,
+                -2.05150144, 2017090700, 'home', 31.25, 22.803333333333335, 21.25, 22.803333333333335, 13.75, 3.63,
+                3.35, 0.38, 161.98, 245.74,
                 2543773, 'James White', 28, 2017, 35.00, 1, '14:14:00', 'NE', 3, 2, 'NE', 0, 0, 2543773, 'SHOTGUN',
                 "1 RB, 1 TE, 3 WR", 6, "2 DL, 3 LB, 6 DB", 'right', '2017-09-08T00:44:06.000Z',
                 '2017-09-08T00:44:05.000Z', 8, '10-May', 205, '2/3/1992', 'Wisconsin', 'RB', 'NE', 'KC', 1,

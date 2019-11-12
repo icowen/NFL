@@ -1,5 +1,4 @@
 import random
-from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
@@ -44,13 +43,6 @@ class Net:
                            metrics=['accuracy'])
 
     def train(self):
-        date = datetime.now().strftime("%m-%d-%y_%H_%M_%S")
-        path = f'net_configurations/crps_net_trained_with_10000_on_{date}.h5'
-        # checkpoint = tf.keras.callbacks.ModelCheckpoint(path,
-        #                                                 monitor='loss',
-        #                                                 verbose=1,
-        #                                                 save_best_only=True,
-        #                                                 save_freq=100 * len(self.x_train))
         validation_overfitting = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                                   min_delta=0,
                                                                   patience=2,
@@ -66,6 +58,7 @@ class Net:
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
+        predicted = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
         return predicted
 
     def load_model(self):

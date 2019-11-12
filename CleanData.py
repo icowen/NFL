@@ -1,4 +1,5 @@
 import math
+import sys
 
 import pandas as pd
 
@@ -24,37 +25,6 @@ def get_side(x):
 
 def get_all_pids(df):
     return df["PlayId"].unique()
-
-
-def combine_by_pid(pid, df):
-    df_pid = df.loc[df["PlayId"] == pid]
-    running_back = df_pid.loc[df_pid["NflId"] == df_pid["NflIdRusher"]]
-    running_back_coords = [running_back.iloc[0]["X_std"], running_back.iloc[0]["Y_std"]]
-
-    df_pid = df_pid.loc[df_pid["NflId"] != df_pid["NflIdRusher"]]
-    df_pid.loc[:, "dist_from_RB"] = df_pid.apply(
-        lambda x: math.sqrt((x["X_std"] - running_back_coords[0]) ** 2 +
-                            (x["Y_std"] - running_back_coords[1]) ** 2), axis=1)
-    df_pid.loc[:, "ang_from_RB"] = df_pid.apply(
-        lambda x: math.acos((x["X_std"] - running_back_coords[0]) / x["dist_from_RB"])
-        if x["Y_std"] > running_back_coords[1]
-        else -math.acos((x["X_std"] - running_back_coords[0]) / x["dist_from_RB"]),
-        axis=1)
-    df_pid.loc[:, "radial_speed"] = df_pid.apply(
-        lambda x: x["S"] * math.cos(x["ang_from_RB"] - x["Dir_std_2"]), axis=1)
-    df_pid.loc[:, "tangential_speed"] = df_pid.apply(
-        lambda x: x["S"] * math.sin(x["ang_from_RB"] - x["Dir_std_2"]), axis=1)
-
-    df_def = df_pid.loc[df_pid["side"] == "defense"]
-    df_off = df_pid.loc[df_pid["side"] == "offense"]
-
-    off_sorted = df_off.sort_values(by=["dist_from_RB"])
-    def_sorted = df_def.sort_values(by=["dist_from_RB"])
-    off_data = off_sorted[
-        ["Orientation", "Dir_std_2", "dist_from_RB", "ang_from_RB", "radial_speed", "tangential_speed"]]
-    def_data = def_sorted[
-        ["Orientation", "Dir_std_2", "dist_from_RB", "ang_from_RB", "radial_speed", "tangential_speed"]]
-    return off_data, def_data
 
 
 def get_team_on_offense(x):
@@ -93,6 +63,37 @@ def get_y_std_end(x):
     return x["S"] * math.sin((90 - x["Dir_std_2"]) * math.pi / 180) + x["Y_std"]
 
 
+def combine_by_pid(pid, df):
+    df_pid = df.loc[df["PlayId"] == pid]
+    running_back = df_pid.loc[df_pid["NflId"] == df_pid["NflIdRusher"]]
+    running_back_coords = [running_back.iloc[0]["X_std"], running_back.iloc[0]["Y_std"]]
+
+    df_pid = df_pid.loc[df_pid["NflId"] != df_pid["NflIdRusher"]]
+    df_pid.loc[:, "dist_from_RB"] = df_pid.apply(
+        lambda x: math.sqrt((x["X_std"] - running_back_coords[0]) ** 2 +
+                            (x["Y_std"] - running_back_coords[1]) ** 2), axis=1)
+    df_pid.loc[:, "ang_from_RB"] = df_pid.apply(
+        lambda x: math.acos((x["X_std"] - running_back_coords[0]) / x["dist_from_RB"])
+        if x["Y_std"] > running_back_coords[1]
+        else -math.acos((x["X_std"] - running_back_coords[0]) / x["dist_from_RB"]),
+        axis=1)
+    df_pid.loc[:, "radial_speed"] = df_pid.apply(
+        lambda x: x["S"] * math.cos(x["ang_from_RB"] - x["Dir_std_2"]), axis=1)
+    df_pid.loc[:, "tangential_speed"] = df_pid.apply(
+        lambda x: x["S"] * math.sin(x["ang_from_RB"] - x["Dir_std_2"]), axis=1)
+
+    df_def = df_pid.loc[df_pid["side"] == "defense"]
+    df_off = df_pid.loc[df_pid["side"] == "offense"]
+
+    off_sorted = df_off.sort_values(by=["dist_from_RB"])
+    def_sorted = df_def.sort_values(by=["dist_from_RB"])
+    off_data = off_sorted[
+        ["Orientation", "Dir_std_2", "dist_from_RB", "ang_from_RB", "radial_speed", "tangential_speed"]]
+    def_data = def_sorted[
+        ["Orientation", "Dir_std_2", "dist_from_RB", "ang_from_RB", "radial_speed", "tangential_speed"]]
+    return off_data, def_data
+
+
 def clean_data(df):
     df.loc[:, "VisitorTeamAbbr"] = df["VisitorTeamAbbr"].map(clean_team_names)
     df.loc[:, "HomeTeamAbbr"] = df["HomeTeamAbbr"].map(clean_team_names)
@@ -118,20 +119,6 @@ def clean_data(df):
     df.loc[:, "Y_std_end"] = df.apply(lambda x: get_y_std_end(x), axis=1)
     df = df.dropna(subset=['Dir'])
     df = df.dropna(subset=['Orientation'])
-
-    # df.loc[:, "Orientation_new"] = df["Orientation"] + 90
-    # df.loc[:, "Dir_new"] = df["Dir"] + 90
-    # df.loc[df["PlayDirection"] == "left", "X"] = 120 - df.loc[df["PlayDirection"] == "left", "X"] - 10
-    # df.loc[df["PlayDirection"] == "left", "Y"] = 160/3 - df.loc[df["PlayDirection"] == "left", "Y"]
-    # df.loc[df["PlayDirection"] == "left", "Dir_new"] = df.loc[df["PlayDirection"] == "left", "Dir_new"] + 180
-    # df.loc[df["Dir_new"] > 360, "Dir_new"] = df.loc[df["Dir_new"] > 360, "Dir_new"] - 360
-    # df.loc[df["PlayDirection"] == "left", "Orientation_new"] = df.loc[df[
-    #                                                                       "PlayDirection"] == "left", "Orientation_new"] + 180
-    # df.loc[df["Orientation_new"] > 360, "Orientation_new"] = df.loc[
-    #                                                              df["Orientation_new"] > 360, "Orientation_new"] - 360
-    # df.loc[:, "Orientation_new"] = df["Orientation_new"] / 180 * math.pi
-    # df.loc[:, "Dir_new"] = df["Dir_new"] / 180 * math.pi
-    # df.loc[df["PlayDirection"] == "left", "PlayDirection"] = "right"
     return df
 
 
@@ -175,8 +162,9 @@ def convert_to_training_values(data_by_game):
     yards_gained = data_by_game["Yards"]
     y_train = []
     for play in yards_gained.values:
-        y = [0 for i in range(199)]
-        for i in range(99 + play, 199):
+        sys.stderr.write(f'play: {play}')
+        y = [0 for i in range(115)]
+        for i in range(15 + play, 115):
             y[i] = 1
         y_train.append(y)
     for c in data_by_game.columns:
@@ -189,8 +177,4 @@ def convert_data(df):
     df = clean_data(df)
     df = get_output_data(df)
     x_train, y_train = convert_to_training_values(df)
-    # x_train = pd.DataFrame(x_train)
-    # x_train.to_csv(r'x_train.csv', index=None)
-    # y_train = pd.DataFrame(y_train)
-    # y_train.to_csv(r'y_train.csv', index=None)
     return x_train, y_train
