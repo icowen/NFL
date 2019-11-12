@@ -45,13 +45,13 @@ class Net:
     def train(self):
         validation_overfitting = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                                   min_delta=0,
-                                                                  patience=2,
+                                                                  patience=20,
                                                                   verbose=0, mode='auto')
         callbacks_list = [validation_overfitting]
 
         self.model.fit(self.x_train,
                        self.y_train,
-                       # validation_split=.2,
+                       validation_split=.2,
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size,
                        callbacks=callbacks_list)
