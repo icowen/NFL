@@ -51,13 +51,17 @@ class Net:
 
         self.model.fit(self.x_train,
                        self.y_train,
-                       validation_split=.2,
+                       # validation_split=.2,
                        epochs=self.number_of_epochs,
                        batch_size=self.batch_size,
                        callbacks=callbacks_list)
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
+        for input_play, prediction in zip(x_input, predicted):
+            yards_2_endzone = int(input_play[-4])
+            for i in range(yards_2_endzone + 15, len(prediction)):
+                prediction[i] = 1
         predicted = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
         return predicted
 
