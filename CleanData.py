@@ -1,5 +1,4 @@
 import math
-import sys
 
 import pandas as pd
 
@@ -63,6 +62,18 @@ def get_y_std_end(x):
     return x["S"] * math.sin((90 - x["Dir_std_2"]) * math.pi / 180) + x["Y_std"]
 
 
+def get_yards_to_end_zone(x):
+    return 100 - x["YardLine"] if x["PossessionTeam"] == x["FieldPosition"] else x["YardLine"]
+
+
+def pre_get_yards_from_own_goal(x):
+    return x["YardLine"] if x["FieldPosition"] == x["PossessionTeam"] else 50 - x["YardLine"]
+
+
+def get_yards_from_own_goal(x):
+    return 50 if x["YardLine"] == 50 else x["YardsFromOwnGoal"]
+
+
 def combine_by_pid(pid, df):
     df_pid = df.loc[df["PlayId"] == pid]
     running_back = df_pid.loc[df_pid["NflId"] == df_pid["NflIdRusher"]]
@@ -99,14 +110,9 @@ def clean_data(df):
     df.loc[:, "HomeTeamAbbr"] = df["HomeTeamAbbr"].map(clean_team_names)
     df.loc[:, "ToLeft"] = df.apply(lambda x: x["PlayDirection"] == "left", axis=1)
     df.loc[:, "IsBallCarrier"] = df.apply(lambda x: x["NflId"] == x["NflIdRusher"], axis=1)
-    df.loc[:, "YardsFromOwnGoal"] = df.apply(
-        lambda x: x["YardLine"]
-        if x["FieldPosition"] == x["PossessionTeam"]
-        else 50 - x["YardLine"], axis=1)
-    df.loc[:, "YardsFromOwnGoal"] = df.apply(
-        lambda x: 50
-        if x["YardLine"] == 50
-        else x["YardsFromOwnGoal"], axis=1)
+    df.loc[:, "YardsFromOwnGoal"] = df.apply(lambda x: pre_get_yards_from_own_goal(x), axis=1)
+    df.loc[:, "YardsFromOwnGoal"] = df.apply(lambda x: get_yards_from_own_goal(x), axis=1)
+    df.loc[:, "YardsToEndZone"] = df.apply(lambda x: get_yards_to_end_zone(x), axis=1)
     df.loc[:, "side"] = df.apply(lambda x: get_side(x), axis=1)
     df.loc[:, "TeamOnOffense"] = df.apply(lambda x: get_team_on_offense(x), axis=1)
     df.loc[:, "IsOnOffense"] = df.apply(lambda x: get_is_on_offense(x), axis=1)
@@ -146,7 +152,8 @@ def get_output_data(df):
             play = pd.concat([off_data, def_data], axis=1)
             rusher_data = df.loc[(df["PlayId"] == pid) & (df["NflId"] == df["NflIdRusher"])].reset_index()
             rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: 100 - x["X"] if x["X"] > 50 else x["X"], axis=1)
-            rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: 160/3 - x["Y"] if x["X"] > 50 else x["Y"], axis=1)
+            rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: 160 / 3 - x["Y"] if x["X"] > 50 else x["Y"],
+                                                            axis=1)
             rusher_data.loc[:, "RB_Dis_YL"] = rusher_data.apply(lambda x: abs(x["X_new"] - x["YardLine"]), axis=1)
             play = pd.concat([play, rusher_data], axis=1)
             data_by_game = data_by_game.append(play)
@@ -158,11 +165,10 @@ def get_output_data(df):
 def convert_to_training_values(data_by_game):
     keep = ['dist_from_RB', 'ang_from_RB', 'X_new', 'Y_new',
             'RB_Dis_YL', 'tangential_speed', 'radial_speed',
-            "YardLine", "Quarter", "Down", "Distance"]
+            "YardLine", "Quarter", "Down", "Distance", "YardsToEndZone"]
     yards_gained = data_by_game["Yards"]
     y_train = []
     for play in yards_gained.values:
-        sys.stderr.write(f'play: {play}')
         y = [0 for i in range(115)]
         for i in range(15 + play, 115):
             y[i] = 1

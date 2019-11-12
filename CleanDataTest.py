@@ -66,6 +66,10 @@ def test_add_ball_carrier():
     np.testing.assert_array_equal(df["IsBallCarrier"].head(), [False, False, False, False, False])
 
 
+def test_add_yards_to_end_zone():
+    np.testing.assert_array_equal(df["YardsToEndZone"].head(), [65, 65, 65, 65, 65])
+
+
 def test_add_yards_from_own_goal():
     np.testing.assert_array_equal(df["YardsFromOwnGoal"].head(), [35, 35, 35, 35, 35])
 
@@ -206,6 +210,7 @@ def test_pid_works():
     np.testing.assert_approx_equal(output.iloc[0]["Quarter"], expected_df.loc["Quarter"])
     np.testing.assert_approx_equal(output.iloc[0]["Down"], expected_df.loc["Down"])
     np.testing.assert_approx_equal(output.iloc[0]["Distance"], expected_df.loc["Distance"])
+    np.testing.assert_approx_equal(output.iloc[0]["YardsToEndZone"], 65)
 
 
 if __name__ == '__main__':
