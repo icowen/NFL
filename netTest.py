@@ -31,15 +31,15 @@ class MyTestCase(unittest.TestCase):
                        number_of_epochs=200)
 
     def test_train_and_predict(self):
-        self.net.train()
-        prediction = self.net.predict(np.asarray(self.x_train[-10:]))
-        with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
-            for x, y in zip(self.y_train, prediction):
-                i = -99
-                for a, b in zip(x, y):
-                    f.write('i: {: 3d}; Actual: {:d}; Predicted: {:f}\n'.format(i, a, b))
-                    i += 1
-                f.write('\n-------------------------\n')
+        # self.net.train()
+        # prediction = self.net.predict(np.asarray(self.x_train[-10:]))
+        # with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
+        #     for x, y in zip(self.y_train, prediction):
+        #         i = -99
+        #         for a, b in zip(x, y):
+        #             f.write('i: {: 3d}; Actual: {:d}; Predicted: {:f}\n'.format(i, a, b))
+        #             i += 1
+        #         f.write('\n-------------------------\n')
         self.assertTrue(True, True)
 
 

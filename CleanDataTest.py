@@ -1,15 +1,56 @@
+import math
+import sys
 import unittest
 
 import numpy as np
 import pandas as pd
 
 import CleanData
+import matplotlib.pyplot as plt
 
 pd.set_option('display.max_columns', None, 'display.max_rows', None)
 
 input_df = pd.read_csv("data/train.csv", header=0)
-df = CleanData.clean_data(input_df.head())
-output, y_train = CleanData.convert_data(input_df.head(100))
+
+sys.stderr.write(f'input_df: {input_df.head(22)}')
+
+df = CleanData.clean_data(input_df.head(22))
+sys.stderr.write(f'df: {df}')
+
+
+output, y_train = CleanData.convert_data(df)
+
+
+# def convert_to_rect(R, theta, dx, dy):
+#     x = []
+#     y = []
+#     for r, t in zip(R, theta):
+#         x.append(r*math.cos(t) + dx)
+#         y.append(r*math.sin(t) + dy)
+#     return x, y
+#
+#
+# def test_graph():
+#     raw = df.head(22)
+#     converted = pd.DataFrame(output.iloc[0]).transpose()
+#     dx = converted.iloc[0]["X_new"]
+#     dy = converted.iloc[0]["Y_new"]
+#     x = raw["X"].to_list()
+#     y = raw["Y"].to_list()
+#     plt.scatter(x, y)
+#     plt.xlim(0, 100)
+#     plt.ylim(0, 160/3)
+#     r = []
+#     theta = []
+#     for c in converted.columns:
+#         if "dist_from_RB" in c:
+#             r.append(converted.iloc[0][c])
+#         if "ang_from_RB" in c:
+#             theta.append(converted.iloc[0][c])
+#     x_new, y_new = convert_to_rect(r, theta, dx, dy)
+#     plt.scatter(x_new, y_new)
+#     plt.plot([50, 50], [0, 160/3])
+#     plt.show()
 
 
 def test_clean_raw_data():
@@ -20,6 +61,14 @@ def test_add_play_direction():
     np.testing.assert_array_equal(df["ToLeft"].head(), [True, True, True, True, True])
 
 
+def test_add_team_on_offense():
+    np.testing.assert_array_equal(df["TeamOnOffense"].head(), ["home", "home", "home", "home", "home"])
+
+
+def test_is_on_offense():
+    np.testing.assert_array_equal(df["IsOnOffense"].head(), [False, False, False, False, False])
+
+
 def test_add_ball_carrier():
     np.testing.assert_array_equal(df["IsBallCarrier"].head(), [False, False, False, False, False])
 
@@ -28,33 +77,32 @@ def test_add_yards_from_own_goal():
     np.testing.assert_array_equal(df["YardsFromOwnGoal"].head(), [35, 35, 35, 35, 35])
 
 
+def test_x_std():
+    np.testing.assert_almost_equal(df["X_std"].head(), [36.09, 35.33, 36., 38.54, 40.68])
+
+
+def test_y_std():
+    np.testing.assert_almost_equal(df["Y_std"].head(), [18.4933333, 20.6933333, 20.1333333, 25.6333333, 17.9133333])
+
+
+def test_dir_std_1():
+    np.testing.assert_almost_equal(df["Dir_std_1"].head(), [177.18, 198.7, 202.73, 105.64, 164.31])
+
+
+def test_dir_std_2():
+    np.testing.assert_almost_equal(df["Dir_std_2"].head(), [-2.82, 18.7, 22.73, -74.36, -15.69])
+
+
+def test_x_std_end():
+    np.testing.assert_almost_equal(df["X_std_end"].head(), [36.0068547, 35.4646575, 36.4713946, 38.1355507, 40.187813])
+
+
+def test_y_std_end():
+    np.testing.assert_almost_equal(df["Y_std_end"].head(), [20.1812868, 21.0911616, 21.2585831, 25.746562, 19.6655182])
+
+
 def test_add_side():
     np.testing.assert_array_equal(df["side"].head(), ['defense', 'defense', 'defense', 'defense', 'defense'])
-
-
-def test_get_all_pids():
-    np.testing.assert_array_equal(CleanData.get_all_pids(df), [20170907000118])
-
-
-def test_make_x_go_to_left():
-    np.testing.assert_allclose(df["X"].head(), [36.09, 35.33, 36., 38.54, 40.68])
-
-
-def test_make_y_go_to_left():
-    np.testing.assert_allclose(df["Y"].head(), [18.46, 20.66, 20.1, 25.6, 17.88])
-
-
-def test_convert_orientation_to_radians():
-    np.testing.assert_allclose(df["Orientation_new"].head(), [6.143384, 5.194274, 4.764923, 4.708375, 4.932824],
-                               rtol=1e-06)
-
-
-def test_convert_dir_to_radians():
-    np.testing.assert_allclose(df["Dir_new"].head(), [1.521578, 1.897173, 1.96751, 0.272969, 1.296954], rtol=1e-05)
-
-
-def test_play_direction():
-    np.testing.assert_array_equal(df["PlayDirection"].head(), ["right", "right", "right", "right", "right"])
 
 
 def test_yard_line():
@@ -79,16 +127,15 @@ def test_distance():
 
 
 def test_pid_works():
-    # print(f'output: {output}')
     expected = [1, 2.02E+13, 5.194274387, 4.408352625, 4.764923391, 6.143384434, 3.810751889, 4.708374723,
                 6.029588967, 4.932824065, 4.162959332, 4.66404336, 4.445353605, 1.897172897, 3.213849285,
                 1.967509666, 1.521578042, 0.087440996, 0.272969495, 1.759990018, 1.296954167, 3.142290785,
                 4.059461307, 5.67773059, 4.593310353, 4.880256141, 5.448981556, 6.480871855, 7.500466652,
-                7.820038363, 9.902019996, 10.62247617, 12.96859283, 14.64451092, 22.41587161, 0.477278702,
+                7.820038363, 9.902019996, 10.62247617, 12.96859283, 14.64451092, 22.41587161, -0.477278702,
                 0.340542898, 0.51208955, 0.727539316, 1.056445942, 0.370295381, 0.993997736, 0.478383384,
-                1.143020142, 1.248397964, 0.1626551, 0.063138631, -0.694243143, 0.140446896, 1.184640417,
+                1.143020142, 1.248397964, 0.1626551, 0.39764667890990973, -0.694243143, 0.140446896, 1.184640417,
                 0.571781257, 0.418012381, 3.279161389, 1.243543167, -0.515199569, -1.049916468, 0.186998554,
-                -0.415227062, -0.190857168, -1.211888885, -1.205291285, 0.83256603, 0.040812369, -3.154298747,
+                -0.13519289460588946, -0.190857168, -1.211888885, -1.205291285, 0.83256603, 0.040812369, -3.154298747,
                 -1.328909475, -1.127904874, -0.360243544, 0.180642024, 1.78337743, 2.043431488, 2.242573556,
                 1.385093294, 2.043606021, 1.550201442, 0.750666111, 0.384321501, 1.084547597, 1.552819435,
                 0.364075682, 2.317099115, 3.09481783, 2.653773128, 2.891486972, 2.197369528, 1.894554903,
@@ -98,7 +145,7 @@ def test_pid_works():
                 1.227772386, 1.348619768, -0.332279565, -0.343511046, -1.739928545, -0.686682726, -1.290382832,
                 -0.056044231, 0.952888917, 4.23121523, -0.991510982, -1.039875878, 0.771485768, -1.460137035,
                 -0.657456203, -0.726957243, -1.106757492, -1.709081345, -0.998199735, -2.935867448, -1.851190421,
-                -2.05150144, 2017090700, 'home', 31.25, 22.77, 31.25, 22.77, 3.75, 3.63, 3.35, 0.38, 161.98, 245.74,
+                -2.05150144, 2017090700, 'home', 31.25, 22.77, 21.25, 22.77, 13.75, 3.63, 3.35, 0.38, 161.98, 245.74,
                 2543773, 'James White', 28, 2017, 35.00, 1, '14:14:00', 'NE', 3, 2, 'NE', 0, 0, 2543773, 'SHOTGUN',
                 "1 RB, 1 TE, 3 WR", 6, "2 DL, 3 LB, 6 DB", 'right', '2017-09-08T00:44:06.000Z',
                 '2017-09-08T00:44:05.000Z', 8, '10-May', 205, '2/3/1992', 'Wisconsin', 'RB', 'NE', 'KC', 1,
@@ -148,8 +195,6 @@ def test_pid_works():
                         'Humidity', 'WindSpeed', 'WindDirection', 'ToLeft', 'IsBallCarrier', 'YardsFromOwnGoal',
                         'side', 'Orientation_new', 'Dir_new']
     expected_df = pd.Series(expected, expected_headers)
-    np.testing.assert_approx_equal(output.iloc[0]["def_Orientation_new1"], expected_df["def_Orientation_new1"])
-    np.testing.assert_approx_equal(output.iloc[0]["def_Dir_new1"], expected_df.loc["def_Dir_new1"])
     np.testing.assert_approx_equal(output.iloc[0]["def_dist_from_RB1"], expected_df.loc["def_dist_from_RB1"])
     np.testing.assert_approx_equal(output.iloc[0]["def_ang_from_RB1"], expected_df.loc["def_ang_from_RB1"])
     np.testing.assert_approx_equal(output.iloc[0]["def_radial_speed1"], expected_df.loc["def_radial_speed1"])
