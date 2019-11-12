@@ -28,10 +28,10 @@ class MyTestCase(unittest.TestCase):
         print(f'x_train: {self.x_train}')
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=200)
+                       number_of_epochs=1000)
 
     def test_train_and_predict(self):
-        # self.net.train()
+        self.net.train()
         # prediction = self.net.predict(np.asarray(self.x_train[-10:]))
         # with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
         #     for x, y in zip(self.y_train, prediction):
