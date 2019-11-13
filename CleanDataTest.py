@@ -152,7 +152,7 @@ def test_pid_works():
     np.testing.assert_approx_equal(output.iloc[0]["def_dist_from_RB1"], 4.593310)
     np.testing.assert_approx_equal(output.iloc[0]["def_ang_from_RB1"], -0.4772787023711037)
     np.testing.assert_approx_equal(output.iloc[0]["def_radial_speed1"], 0.41522706231045375)
-    np.testing.assert_approx_equal(output.iloc[0]["def_tangential_speed1"], -0.0631386310037747)
+    np.testing.assert_approx_equal(output.iloc[0]["def_tangential_speed1"], 0.0631386310037747)
     np.testing.assert_approx_equal(output.iloc[0]["X_new"], 31.25)
     np.testing.assert_approx_equal(output.iloc[0]["Y_new"], 22.803333333333335)
     np.testing.assert_approx_equal(output.iloc[0]["RB_Dis_YL"], 3.75)

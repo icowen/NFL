@@ -93,7 +93,7 @@ def get_radial_speed_x(x):
 
 
 def get_tangential_speed(x):
-    return x["S"] * math.sin(x["ang_from_RB"] + math.pi / 2 - (90 - x["Dir_std_2"]) * math.pi / 180)
+    return math.sqrt(x["tangential_speed_x"] ** 2 + x["tangential_speed_y"] ** 2)
 
 
 def get_dist_from_RB(x, running_back_coords):
@@ -110,7 +110,7 @@ def get_dot(x):
 
 
 def get_radial_speed(x):
-    return x["S"] * math.cos(x["ang_from_RB"] + math.pi / 2 - (90 - x["Dir_std_2"]) * math.pi / 180)
+    return math.sqrt(x["radial_speed_x"] ** 2 + x["radial_speed_y"] ** 2)
 
 
 def combine_by_pid(pid, df):
