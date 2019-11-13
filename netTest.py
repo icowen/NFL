@@ -14,12 +14,12 @@ pd.set_option('display.max_columns', None, 'display.max_rows', None)
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(22*10))
+        x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(22*1000))
         self.x_train = np.asarray(x_train.values)
         self.y_train = np.asarray(y_train.values)
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=10)
+                       number_of_epochs=1000)
 
     def test_train_and_predict(self):
         self.net.train()
