@@ -199,14 +199,17 @@ def get_output_data(df):
         for col in def_data.columns.unique():
             for i in range(1, 12):
                 new_cols.append(col + str(i))
-        def_data.columns = new_cols
-        play = pd.concat([off_data, def_data], axis=1)
-        rusher_data = df.loc[(df["PlayId"] == pid) & (df["NflId"] == df["NflIdRusher"])].reset_index()
-        rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: x["X_std"], axis=1)
-        rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: x["Y_std"], axis=1)
-        rusher_data.loc[:, "RB_Dis_YL"] = rusher_data.apply(lambda x: abs(x["X_new"] - x["YardLine"]), axis=1)
-        play = pd.concat([play, rusher_data], axis=1)
-        data_by_game = data_by_game.append(play)
+        try:
+            def_data.columns = new_cols
+            play = pd.concat([off_data, def_data], axis=1)
+            rusher_data = df.loc[(df["PlayId"] == pid) & (df["NflId"] == df["NflIdRusher"])].reset_index()
+            rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: x["X_std"], axis=1)
+            rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: x["Y_std"], axis=1)
+            rusher_data.loc[:, "RB_Dis_YL"] = rusher_data.apply(lambda x: abs(x["X_new"] - x["YardLine"]), axis=1)
+            play = pd.concat([play, rusher_data], axis=1)
+            data_by_game = data_by_game.append(play)
+        except ValueError:
+            continue
     return data_by_game
 
 
