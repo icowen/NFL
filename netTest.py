@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 import CleanData
-from Net import Net
+from Net import Net, crps_loss
 
 random.seed(3)
 pd.set_option('display.max_columns', None, 'display.max_rows', None)
@@ -23,11 +23,12 @@ class MyTestCase(unittest.TestCase):
 
     def test_train_and_predict(self):
         self.net.train()
-        prediction = self.net.predict(np.asarray(self.x_train[-10:]))
+        prediction = self.net.predict(np.asarray(self.x_train[:1]))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
             for x, y in zip(self.y_train, prediction):
                 i = -99
-                x = np.pad(x, (84, ), constant_values=0)
+                x = np.pad(x, (84, 0), constant_values=0)
+                f.write(f'LOSS: {crps_loss([x], [y])}\n')
                 for a, b in zip(x, y):
                     f.write('i: {: 3d}; Actual: {:d}; Predicted: {:f}\n'.format(i, a, b))
                     i += 1
