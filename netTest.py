@@ -15,7 +15,7 @@ pd.set_option('display.max_columns', None, 'display.max_rows', None)
 class MyTestCase(unittest.TestCase):
     def setUp(self):
         x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(22*1000))
-        self.x_train = np.asarray(x_train.values)
+        self.x_train = np.asarray(x_train.values)[:-10]
         self.y_train = np.asarray(y_train.values)
         self.net = Net(self.x_train,
                        self.y_train,
@@ -23,7 +23,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_train_and_predict(self):
         self.net.train()
-        prediction = self.net.predict(np.asarray(self.x_train[:10]))
+        prediction = self.net.predict(np.asarray(self.x_train[-10:]))
         with open(f'out/{datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
             for x, y in zip(self.y_train, prediction):
                 i = -99
