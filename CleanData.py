@@ -93,7 +93,7 @@ def get_radial_speed_x(x):
 
 
 def get_tangential_speed(x):
-    return x["S"]*math.sin(x["ang_from_RB"] + math.pi / 2 - (90 - x["Dir_std_2"]) * math.pi / 180)
+    return x["S"] * math.sin(x["ang_from_RB"] + math.pi / 2 - (90 - x["Dir_std_2"]) * math.pi / 180)
 
 
 def get_dist_from_RB(x, running_back_coords):
@@ -149,6 +149,15 @@ def combine_by_pid(pid, df):
 
 
 def clean_data(df):
+    columns_to_remove = ['GameId', 'DisplayName', 'JerseyNumber', 'Season', 'HomeScoreBeforePlay',
+                         'VisitorScoreBeforePlay',
+                         'OffenseFormation', 'OffensePersonnel', 'DefendersInTheBox', 'DefensePersonnel', 'TimeHandoff',
+                         'TimeSnap', 'PlayerHeight', 'PlayerWeight', 'PlayerBirthDate', 'PlayerCollegeName', 'Position',
+                         'Week', 'Stadium', 'Location', 'StadiumType', 'Turf', 'GameWeather', 'Temperature', 'Humidity',
+                         'WindSpeed', 'WindDirection']
+    for c in columns_to_remove:
+        if c in df.columns:
+            df = df.drop(c, axis=1)
     df.loc[:, "VisitorTeamAbbr"] = df["VisitorTeamAbbr"].map(clean_team_names)
     df.loc[:, "HomeTeamAbbr"] = df["HomeTeamAbbr"].map(clean_team_names)
     df.loc[:, "ToLeft"] = df.apply(lambda x: x["PlayDirection"] == "left", axis=1)
