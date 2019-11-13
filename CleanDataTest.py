@@ -1,7 +1,9 @@
+import math
 import unittest
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import CleanData
 
@@ -13,52 +15,52 @@ output, y_train = CleanData.convert_data(df)
 y_train = y_train.values
 
 
-# def convert_to_rect(R, theta, dx, dy):
-#     x = []
-#     y = []
-#     for r, t in zip(R, theta):
-#         x.append(r * math.cos(t) + dx)
-#         y.append(r * math.sin(t) + dy)
-#     return x, y
-#
-#
-# def test_graph():
-#     for i in range(10):
-#         raw = df.iloc[22 * i: 22 * (i + 1), ]
-#         converted = pd.DataFrame(output.iloc[i]).transpose()
-#         print(f'Play: {i}')
-#         print(f'converted.iloc[0]: {converted.iloc[0]}')
-#         dx = converted.iloc[0]["X_new"]
-#         dy = converted.iloc[0]["Y_new"]
-#         x = raw["X"].to_list()
-#         y = raw["Y"].to_list()
-#         plt.scatter(x, y, label='Actual')
-#         plt.xlim(0, 100)
-#         plt.ylim(0, 160 / 3)
-#         def_r = []
-#         off_r = []
-#         def_theta = []
-#         off_theta = []
-#         for c in converted.columns:
-#             if "def_dist_from_RB" in c:
-#                 def_r.append(converted.iloc[0][c])
-#             if "off_dist_from_RB" in c:
-#                 off_r.append(converted.iloc[0][c])
-#             if "def_ang_from_RB" in c:
-#                 def_theta.append(converted.iloc[0][c])
-#             if "off_ang_from_RB" in c:
-#                 off_theta.append(converted.iloc[0][c])
-#         x_new, y_new = convert_to_rect(def_r, def_theta, dx, dy)
-#         print(f'x_new: {x_new}')
-#         print(f'y_new: {y_new}')
-#         plt.scatter(x_new, y_new, label='Converted Defense', marker='o')
-#         x_new, y_new = convert_to_rect(off_r, off_theta, dx, dy)
-#         plt.scatter(x_new, y_new, label='Converted Offense', marker='s')
-#         plt.plot([50, 50], [0, 160 / 3])
-#         plt.title(f'play {i}')
-#         plt.legend()
-#         plt.show()
-#         print('\n\n\n')
+def convert_to_rect(R, theta, dx, dy):
+    x = []
+    y = []
+    for r, t in zip(R, theta):
+        x.append(r * math.cos(t) + dx)
+        y.append(r * math.sin(t) + dy)
+    return x, y
+
+
+def test_graph():
+    for i in range(10):
+        raw = df.iloc[22 * i: 22 * (i + 1), ]
+        converted = pd.DataFrame(output.iloc[i]).transpose()
+        print(f'Play: {i}')
+        print(f'converted.iloc[0]: {converted.iloc[0]}')
+        dx = converted.iloc[0]["X_new"]
+        dy = converted.iloc[0]["Y_new"]
+        x = raw["X"].to_list()
+        y = raw["Y"].to_list()
+        plt.scatter(x, y, label='Actual')
+        plt.xlim(0, 120)
+        plt.ylim(0, 160 / 3)
+        def_r = []
+        off_r = []
+        def_theta = []
+        off_theta = []
+        for c in converted.columns:
+            if "def_dist_from_RB" in c:
+                def_r.append(converted.iloc[0][c])
+            if "off_dist_from_RB" in c:
+                off_r.append(converted.iloc[0][c])
+            if "def_ang_from_RB" in c:
+                def_theta.append(converted.iloc[0][c])
+            if "off_ang_from_RB" in c:
+                off_theta.append(converted.iloc[0][c])
+        x_new, y_new = convert_to_rect(def_r, def_theta, dx, dy)
+        print(f'x_new: {x_new}')
+        print(f'y_new: {y_new}')
+        plt.scatter(x_new, y_new, label='Converted Defense', marker='o')
+        x_new, y_new = convert_to_rect(off_r, off_theta, dx, dy)
+        plt.scatter(x_new, y_new, label='Converted Offense', marker='s')
+        plt.grid(b=True)
+        plt.title(f'play {i}')
+        plt.legend()
+        plt.show()
+        print('\n\n\n')
 
 
 def test_clean_raw_data():
@@ -149,10 +151,10 @@ def test_pid_works():
     np.testing.assert_approx_equal(output.iloc[0]["def_dist_from_RB1"], 4.593310)
     np.testing.assert_approx_equal(output.iloc[0]["def_ang_from_RB1"], -0.4772787023711037)
     np.testing.assert_approx_equal(output.iloc[0]["def_radial_speed1"], 0.41522706231045375)
-    np.testing.assert_approx_equal(output.iloc[0]["def_tangential_speed1"], 0.06313863100377297)
-    np.testing.assert_approx_equal(output.iloc[0]["X_new"], 34.5594359549917)
-    np.testing.assert_approx_equal(output.iloc[0]["Y_new"], 24.294820396571957)
-    np.testing.assert_approx_equal(output.iloc[0]["RB_Dis_YL"], 0.44056404500830126)
+    np.testing.assert_approx_equal(output.iloc[0]["def_tangential_speed1"], -0.0631386310037747)
+    np.testing.assert_approx_equal(output.iloc[0]["X_new"], 31.25)
+    np.testing.assert_approx_equal(output.iloc[0]["Y_new"], 22.803333333333335)
+    np.testing.assert_approx_equal(output.iloc[0]["RB_Dis_YL"], 3.75)
     np.testing.assert_approx_equal(output.iloc[0]["YardLine"], 35)
     np.testing.assert_approx_equal(output.iloc[0]["Quarter"], 1)
     np.testing.assert_approx_equal(output.iloc[0]["Down"], 3)

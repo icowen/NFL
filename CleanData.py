@@ -93,7 +93,7 @@ def get_radial_speed_x(x):
 
 
 def get_tangential_speed(x):
-    return math.sqrt(x["tangential_speed_x"] ** 2 + x["tangential_speed_y"] ** 2)
+    return x["S"]*math.sin(x["ang_from_RB"] + math.pi / 2 - (90 - x["Dir_std_2"]) * math.pi / 180)
 
 
 def get_dist_from_RB(x, running_back_coords):
@@ -110,7 +110,7 @@ def get_dot(x):
 
 
 def get_radial_speed(x):
-    return math.sqrt(x["radial_speed_x"] ** 2 + x["radial_speed_y"] ** 2)
+    return x["S"] * math.cos(x["ang_from_RB"] + math.pi / 2 - (90 - x["Dir_std_2"]) * math.pi / 180)
 
 
 def combine_by_pid(pid, df):
@@ -125,6 +125,8 @@ def combine_by_pid(pid, df):
     df_pid.loc[:, "dist_from_RB_y"] = df_pid.apply(lambda x: running_back_coords[1] - x["Y_std"], axis=1)
     df_pid.loc[:, "dist_from_RB"] = df_pid.apply(lambda x: get_dist_from_RB(x, running_back_coords), axis=1)
 
+    df_pid.loc[:, "ang_from_RB"] = df_pid.apply(lambda x: get_ang_from_RB(x, running_back_coords), axis=1)
+
     df_pid.loc[:, "dot"] = df_pid.apply(lambda x: get_dot(x), axis=1)
     df_pid.loc[:, "tangential_speed_x"] = df_pid.apply(lambda x: get_tangential_speed_x(x), axis=1)
     df_pid.loc[:, "tangential_speed_y"] = df_pid.apply(lambda x: get_tangential_speed_y(x), axis=1)
@@ -133,8 +135,6 @@ def combine_by_pid(pid, df):
     df_pid.loc[:, "radial_speed_x"] = df_pid.apply(lambda x: get_radial_speed_x(x), axis=1)
     df_pid.loc[:, "radial_speed_y"] = df_pid.apply(lambda x: get_radial_speed_y(x), axis=1)
     df_pid.loc[:, "radial_speed"] = df_pid.apply(lambda x: get_radial_speed(x), axis=1)
-
-    df_pid.loc[:, "ang_from_RB"] = df_pid.apply(lambda x: get_ang_from_RB(x, running_back_coords), axis=1)
 
     df_def = df_pid.loc[df_pid["side"] == "defense"]
     df_off = df_pid.loc[df_pid["side"] == "offense"]
@@ -193,8 +193,8 @@ def get_output_data(df):
         def_data.columns = new_cols
         play = pd.concat([off_data, def_data], axis=1)
         rusher_data = df.loc[(df["PlayId"] == pid) & (df["NflId"] == df["NflIdRusher"])].reset_index()
-        rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: x["X_std_end"], axis=1)
-        rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: x["Y_std_end"], axis=1)
+        rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: x["X_std"], axis=1)
+        rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: x["Y_std"], axis=1)
         rusher_data.loc[:, "RB_Dis_YL"] = rusher_data.apply(lambda x: abs(x["X_new"] - x["YardLine"]), axis=1)
         play = pd.concat([play, rusher_data], axis=1)
         data_by_game = data_by_game.append(play)
