@@ -14,7 +14,7 @@ pd.set_option('display.max_columns', None, 'display.max_rows', None)
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv').head(22*1000))
+        x_train, y_train = CleanData.convert_data(pd.read_csv('data/train.csv'))
         self.x_train = np.asarray(x_train.values)[:-10]
         self.y_train = np.asarray(y_train.values)[:-10]
         self.net = Net(self.x_train,
