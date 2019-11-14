@@ -67,7 +67,7 @@ def get_yards_to_end_zone(x):
 
 
 def pre_get_yards_from_own_goal(x):
-    return x["YardLine"] if x["FieldPosition"] == x["PossessionTeam"] else 50 - x["YardLine"]
+    return x["YardLine"] if x["FieldPosition"] == x["PossessionTeam"] else 100 - x["YardLine"]
 
 
 def get_yards_from_own_goal(x):
@@ -190,16 +190,16 @@ def get_output_data(df):
             def_data = def_data.rename(columns={col: "def_" + col})
         off_data = off_data.unstack().to_frame().reset_index(level=1, drop=True).T
         def_data = def_data.unstack().to_frame().reset_index(level=1, drop=True).T
-        new_cols = []
-        for col in off_data.columns.unique():
-            for i in range(1, 11):
-                new_cols.append(col + str(i))
-        off_data.columns = new_cols
-        new_cols = []
-        for col in def_data.columns.unique():
-            for i in range(1, 12):
-                new_cols.append(col + str(i))
         try:
+            new_cols = []
+            for col in off_data.columns.unique():
+                for i in range(1, 11):
+                    new_cols.append(col + str(i))
+            off_data.columns = new_cols
+            new_cols = []
+            for col in def_data.columns.unique():
+                for i in range(1, 12):
+                    new_cols.append(col + str(i))
             def_data.columns = new_cols
             play = pd.concat([off_data, def_data], axis=1)
             rusher_data = df.loc[(df["PlayId"] == pid) & (df["NflId"] == df["NflIdRusher"])].reset_index()
