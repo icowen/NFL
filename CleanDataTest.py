@@ -9,16 +9,20 @@ import matplotlib.pyplot as plt
 import CleanData
 
 pd.set_option('display.max_columns', None, 'display.max_rows', None)
+#
+# input_df = pd.read_csv("data/train.csv", header=0)
+# df = CleanData.clean_data(input_df.head(22 * 10))
+# output, y_train = CleanData.convert_data(df)
+# y_train = y_train.values
 
-input_df = pd.read_csv("data/train.csv", header=0)
-df = CleanData.clean_data(input_df.head(22 * 10))
-output, y_train = CleanData.convert_data(df)
-y_train = y_train.values
 
+class CleanDataTest(unittest.TestCase):
 
-def test_get_yard_dist():
-    with open('yard_dist.tsv', 'w') as f:
-        f.write(df["Yards"].value_counts(normalize=True).to_string())
+    def test_get_yard_dist(self):
+        input_df = pd.read_csv("data/train.csv", header=0)
+        df = CleanData.clean_data(input_df)
+        with open('yard_dist.tsv', 'w') as f:
+            f.write(df["Yards"].value_counts(normalize=True).to_string())
 
 
 # def convert_to_rect(R, theta, dx, dy):
