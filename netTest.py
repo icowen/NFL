@@ -19,7 +19,7 @@ class MyTestCase(unittest.TestCase):
         self.y_train = np.asarray(y_train.values)[:-10]
         self.net = Net(self.x_train,
                        self.y_train,
-                       number_of_epochs=1000)
+                       number_of_epochs=40)
 
     def test_train_and_predict(self):
         self.net.train()
