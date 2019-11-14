@@ -29,14 +29,12 @@ def test_graph():
     for i in range(10):
         raw = df.iloc[22 * i: 22 * (i + 1), ]
         converted = pd.DataFrame(output.iloc[i]).transpose()
-        print(f'Play: {i}')
-        print(f'converted.iloc[0]: {converted.iloc[0]}')
         dx = converted.iloc[0]["X_new"]
         dy = converted.iloc[0]["Y_new"]
         x = raw["X"].to_list()
         y = raw["Y"].to_list()
         plt.scatter(x, y, label='Actual')
-        plt.xlim(0, 120)
+        plt.xlim(0, 100)
         plt.ylim(0, 160 / 3)
         def_r = []
         off_r = []
@@ -52,8 +50,6 @@ def test_graph():
             if "off_ang_from_RB" in c:
                 off_theta.append(converted.iloc[0][c])
         x_new, y_new = convert_to_rect(def_r, def_theta, dx, dy)
-        print(f'x_new: {x_new}')
-        print(f'y_new: {y_new}')
         plt.scatter(x_new, y_new, label='Converted Defense', marker='o')
         x_new, y_new = convert_to_rect(off_r, off_theta, dx, dy)
         plt.scatter(x_new, y_new, label='Converted Offense', marker='s')
@@ -61,7 +57,6 @@ def test_graph():
         plt.title(f'play {i}')
         plt.legend()
         plt.show()
-        print('\n\n\n')
 
 
 def test_clean_raw_data():
