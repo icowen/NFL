@@ -1,29 +1,47 @@
 import math
-import sys
-import unittest
-
 import numpy as np
+import random
+
 import pandas as pd
-import matplotlib.pyplot as plt
 
 import CleanData
 
 pd.set_option('display.max_columns', None, 'display.max_rows', None)
-#
-# input_df = pd.read_csv("data/train.csv", header=0)
-# df = CleanData.clean_data(input_df.head(22 * 10))
-# output, y_train = CleanData.convert_data(df)
-# y_train = y_train.values
+
+input_df = pd.read_csv("data/train.csv", header=0).head(22 * 20)
+df = CleanData.clean_data(input_df)
+output, y_train, cumsum = CleanData.convert_data(df)
+y_train = y_train.values
 
 
-class CleanDataTest(unittest.TestCase):
+def logit(p):
+    return math.log(p / (1 - p))
 
-    def test_get_yard_dist(self):
-        input_df = pd.read_csv("data/train.csv", header=0)
-        df = CleanData.clean_data(input_df)
-        with open('yard_dist.tsv', 'w') as f:
-            f.write(df["Yards"].value_counts(normalize=True).to_string())
 
+def inverse_logit(x):
+    return math.pow(math.e, x) / (1 + math.pow(math.e, x))
+
+
+def test_get_yard_dist():
+    print(f'cumsum: {cumsum}')
+    np.testing.assert_equal(len(cumsum), 115)
+    # cumsum = df["Yards"].value_counts(normalize=True).sort_index().cumsum()
+    # for i in range(-15, 100):
+    #     j = i
+    #     while j not in cumsum.index and j > -15:
+    #         j -= 1
+    #     if i == -15:
+    #         cumsum[i] = 0
+    #     cumsum[i] = cumsum[j]
+    # cumsum = cumsum.sort_index()
+    o = []
+    fake_output = [random.random() for _ in range(115)]
+    for i in range(115):
+        if fake_output[i] == 0:
+            inside = cumsum[i - 15] + float('-inf')
+        else:
+            inside = cumsum[i - 15] + logit(fake_output[i])
+        o.append(inverse_logit(inside))
 
 # def convert_to_rect(R, theta, dx, dy):
 #     x = []
@@ -166,6 +184,6 @@ class CleanDataTest(unittest.TestCase):
 #     np.testing.assert_approx_equal(output.iloc[0]["Distance"], 2)
 #     np.testing.assert_approx_equal(output.iloc[0]["YardsToEndZone"], 65)
 
-
-if __name__ == '__main__':
-    unittest.main()
+#
+# if __name__ == '__main__':
+#     unittest.main()

@@ -16,12 +16,14 @@ class Net:
     def __init__(self,
                  x_train,
                  y_train,
+                 cumsum,
                  number_of_epochs=10,
                  batch_size=100,
                  load_filename=None):
         self.model = tf.keras.Sequential()
         self.x_train = x_train
         self.y_train = y_train
+        self.cumsum = cumsum
         self.number_of_epochs = number_of_epochs
         self.batch_size = batch_size
         self.load_filename = load_filename
@@ -39,7 +41,7 @@ class Net:
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
-                           loss=crps_loss,
+                           loss=crps_loss(self.cumsum),
                            metrics=['accuracy'])
 
     def train(self):
@@ -67,16 +69,23 @@ class Net:
     def load_model(self):
         self.model = tf.keras.models.load_model(self.load_filename, custom_objects={'crps_loss': crps_loss})
         self.model.compile(optimizer='adam',
-                           loss=crps_loss,
+                           loss=crps_loss(self.cumsum),
                            metrics=['accuracy'])
 
 
-@tf.function
-def crps_loss(y_true, y_pred):
-    y_true = K.cast(y_true, dtype='float32')
-    y_pred = K.cast(y_pred, dtype='float32')
-    ret = K.switch(y_true >= 1, y_pred - 1, y_pred)
-    ret = K.square(ret)
-    per_play_loss = K.sum(ret, axis=1)
-    total_loss = K.mean(per_play_loss)
-    return total_loss
+def crps_loss(cumsum):
+    @tf.function
+    def crps(y_true, y_pred):
+        y_true = K.cast(y_true, dtype='float64')
+        y_pred = K.cast(y_pred, dtype='float64')
+        a = K.log(cumsum / (1 - K.clip(cumsum, 0, 1-K.epsilon())))
+        y_pred = K.log(y_pred / (1 - K.clip(y_pred, 0, 1-K.epsilon())))
+        ret = a + y_pred
+        ret = K.exp(ret) / (1 + K.exp(ret))
+        ret = K.switch(y_true is not None and y_true >= 1, ret - 1, ret)
+        ret = K.square(ret)
+        per_play_loss = K.sum(ret, axis=1)
+        total_loss = K.mean(per_play_loss)
+        return total_loss
+
+    return crps

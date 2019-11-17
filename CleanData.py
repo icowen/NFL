@@ -220,6 +220,16 @@ def convert_to_training_values(data_by_game):
     yards_gained = data_by_game["Yards"]
     y_train = []
 
+    cumsum = data_by_game["Yards"].value_counts(normalize=True).sort_index().cumsum()
+    for i in range(-15, 100):
+        j = i
+        while j not in cumsum.index and j > -15:
+            j -= 1
+        if i == -15:
+            cumsum[i] = 0
+        cumsum[i] = cumsum[j]
+    cumsum = cumsum.sort_index()
+
     for play in yards_gained.values:
         y = [0 for i in range(115)]
         for i in range(15 + play, 115):
@@ -230,11 +240,11 @@ def convert_to_training_values(data_by_game):
         if all(k not in c for k in keep):
             data_by_game = data_by_game.drop(c, axis=1)
 
-    return data_by_game, pd.DataFrame(y_train)
+    return data_by_game, pd.DataFrame(y_train), cumsum.values
 
 
 def convert_data(df):
     df = clean_data(df)
     df = get_output_data(df)
-    x_train, y_train = convert_to_training_values(df)
-    return x_train, y_train
+    x_train, y_train, cumsum = convert_to_training_values(df)
+    return x_train, y_train, cumsum
