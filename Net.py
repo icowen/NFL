@@ -75,14 +75,14 @@ class Net:
 
 def crps_loss(cumsum):
     @tf.function
-    def crps(y_true, y_pred):
+    def crps(y_true, logit_of_y_pred):
         y_true = K.cast(y_true, dtype='float64')
-        y_pred = K.cast(y_pred, dtype='float64')
-        a = K.log(cumsum / (1 - K.clip(cumsum, 0, 1-K.epsilon())))
-        y_pred = K.log(y_pred / (1 - K.clip(y_pred, 0, 1-K.epsilon())))
-        ret = a + y_pred
-        ret = K.exp(ret) / (1 + K.exp(ret))
-        ret = K.switch(y_true is not None and y_true >= 1, ret - 1, ret)
+        y_pred = K.cast(logit_of_y_pred, dtype='float64')
+        logit_of_avg = K.log(cumsum / (1 - K.clip(cumsum, 0, 1-K.epsilon())))
+        logit_of_y_pred = K.log(y_pred / (1 - K.clip(y_pred, 0, 1 - K.epsilon())))
+        sum_of_logits = logit_of_avg + logit_of_y_pred
+        inverse_logit = K.exp(sum_of_logits) / (1 + K.exp(sum_of_logits))
+        ret = K.switch(y_true is not None and y_true >= 1, inverse_logit - 1, inverse_logit)
         ret = K.square(ret)
         per_play_loss = K.sum(ret, axis=1)
         total_loss = K.mean(per_play_loss)
