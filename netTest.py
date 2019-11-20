@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
                        self.y_train,
                        self.cumsum,
                        batch_size=10,
-                       number_of_epochs=200)
+                       number_of_epochs=40)
 
     def test_train_and_predict(self):
         self.net.train()
@@ -31,7 +31,7 @@ class MyTestCase(unittest.TestCase):
             for x, y in zip(self.y_train[-10:], prediction):
                 i = -99
                 x = np.pad(x, (84, 0), constant_values=0)
-                f.write(f'LOSS: {crps_loss(self.cumsum)([x], [y])}\n')
+                # f.write(f'LOSS: {crps_loss(self.cumsum)([x], [y])}\n')
                 for a, b in zip(x, y):
                     f.write('i: {: 3d}; Actual: {:d}; Predicted: {:f}\n'.format(i, a, b))
                     i += 1

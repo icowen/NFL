@@ -1,3 +1,4 @@
+import math
 import random
 
 import numpy as np
@@ -59,6 +60,13 @@ class Net:
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
+        for prediction in predicted:
+            for i in range(len(prediction)):
+                p = prediction[i]
+                p = math.log(p / (1 - p))
+                p -= math.exp(self.cumsum[i]) / (1 + math.exp(self.cumsum[i]))
+                p = math.exp(p) / (1 + math.exp(p))
+                prediction[i] = p
         for input_play, prediction in zip(x_input, predicted):
             yards_2_endzone = int(input_play[-4])
             for i in range(yards_2_endzone + 15, len(prediction)):
