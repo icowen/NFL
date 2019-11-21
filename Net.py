@@ -61,25 +61,21 @@ class Net:
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
-        for prediction in predicted:
+        for input_play, prediction in zip(x_input, predicted):
+            yards_2_endzone = int(input_play[-4])
             for i in range(len(prediction)):
                 p = prediction[i]
                 p = math.log(p / (1 - p))
                 p -= self.cumsum[i]
                 p = math.exp(p) / (1 + math.exp(p))
                 prediction[i] = 1 - p
-        for input_play, prediction in zip(x_input, predicted):
-            yards_2_endzone = int(input_play[-4])
             for i in range(yards_2_endzone + 15, len(prediction)):
                 prediction[i] = 1
+            for i in range(len(prediction) - 1):
+                if prediction[i + 1] < prediction[i]:
+                    prediction[i + 1] = prediction[i]
         predicted = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
         return predicted
-
-    def load_model(self):
-        self.model = tf.keras.models.load_model(self.load_filename, custom_objects={'crps_loss': crps_loss})
-        self.model.compile(optimizer='adam',
-                           loss=crps_loss(self.cumsum),
-                           metrics=['accuracy'])
 
 
 def crps_loss(cumsum):
