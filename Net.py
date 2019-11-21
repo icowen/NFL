@@ -42,6 +42,7 @@ class Net:
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
+                           # loss=crps_loss_func,
                            loss=crps_loss(self.cumsum),
                            metrics=['accuracy'])
 
@@ -64,9 +65,9 @@ class Net:
             for i in range(len(prediction)):
                 p = prediction[i]
                 p = math.log(p / (1 - p))
-                p -= math.exp(self.cumsum[i]) / (1 + math.exp(self.cumsum[i]))
+                p -= self.cumsum[i]
                 p = math.exp(p) / (1 + math.exp(p))
-                prediction[i] = p
+                prediction[i] = 1 - p
         for input_play, prediction in zip(x_input, predicted):
             yards_2_endzone = int(input_play[-4])
             for i in range(yards_2_endzone + 15, len(prediction)):
@@ -83,15 +84,31 @@ class Net:
 
 def crps_loss(cumsum):
     def crps(y_true, y_pred):
-        logit_of_avg = K.log(cumsum / (1 - K.clip(cumsum, 0, 1 - 10 ** -16)))
         logit_of_y_pred = K.log(y_pred / (1 - K.clip(y_pred, 0, 1 - 10 ** -16)))
-        sum_of_logits = logit_of_avg + logit_of_y_pred
+        sum_of_logits = cumsum + logit_of_y_pred
         inverse_logit = K.exp(sum_of_logits) / (1 + K.exp(sum_of_logits))
         inverse_logit = tf.where(tf.math.is_nan(inverse_logit), tf.ones_like(inverse_logit), inverse_logit)
-        ret = K.switch(y_true >= 1, inverse_logit - 1, inverse_logit)
+        # ret = K.switch(y_true >= 1, inverse_logit - 1, inverse_logit)
+        ret = tf.where(y_true >= 1, inverse_logit - 1, inverse_logit)
         ret = K.square(ret)
         per_play_loss = K.sum(ret, axis=1)
         total_loss = K.mean(per_play_loss)
         return total_loss
 
     return crps
+
+
+def crps_loss_func(y_true, y_pred):
+    ret = tf.where(y_true >= 1, y_pred - 1, y_pred)
+    ret = K.square(ret)
+    per_play_loss = K.sum(ret, axis=1)
+    total_loss = K.mean(per_play_loss)
+    return total_loss
+
+# A(d)= logit(overall proportion of play make <=d yards)
+# p(d)= logit^{-1} (A(d) + logit c(d))
+# Then apply old loss function to these p(d). 
+# 
+# logit(p)= log(p/(1-p))  
+# logit^{-1}(x)= e^x/(1+e^x)
+

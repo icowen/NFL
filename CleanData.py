@@ -1,6 +1,8 @@
 import math
+import sys
 
 import pandas as pd
+from numpy import mean
 
 
 def clean_team_names(x):
@@ -96,13 +98,18 @@ def get_tangential_speed(x):
     return math.sqrt(x["tangential_speed_x"] ** 2 + x["tangential_speed_y"] ** 2)
 
 
+def get_tangential_speed_x(x):
+    return x["dot"] / (x["dist_from_RB"]) ** 2 * x["dist_from_RB_x"]
+
+
+def get_on_offensive_line(x):
+    o_line_positions = ["OG", "OT", "T", "G", "C"]
+    return x["Position"] in o_line_positions
+
+
 def get_dist_from_RB(x, running_back_coords):
     return math.sqrt((x["X_std"] - running_back_coords[0]) ** 2 +
                      (x["Y_std"] - running_back_coords[1]) ** 2)
-
-
-def get_tangential_speed_x(x):
-    return x["dot"] / (x["dist_from_RB"]) ** 2 * x["dist_from_RB_x"]
 
 
 def get_dot(x):
@@ -111,6 +118,11 @@ def get_dot(x):
 
 def get_radial_speed(x):
     return math.sqrt(x["radial_speed_x"] ** 2 + x["radial_speed_y"] ** 2)
+
+
+def get_on_defensive_line(x):
+    d_line = ["DE", "DL", "NT"]
+    return x["Position"] in d_line
 
 
 def combine_by_pid(pid, df):
@@ -137,7 +149,40 @@ def combine_by_pid(pid, df):
     df_pid.loc[:, "radial_speed"] = df_pid.apply(lambda x: get_radial_speed(x), axis=1)
 
     df_def = df_pid.loc[df_pid["side"] == "defense"]
+    df_def_minus_db = df_def.loc[df_def["Position"].isin(["CB", "SAF", "DB", "FS", "S", "SS"])]
     df_off = df_pid.loc[df_pid["side"] == "offense"]
+    df_off_line = df_off.loc[df_off["Position"].isin(["OG", "OT", "T", "G", "C"])]
+
+    dl_S_x = df_def.loc[df_def["OnDefensiveLine"]]["S_x"].sum()
+    dl_S_y = df_def.loc[df_def["OnDefensiveLine"]]["S_y"].sum()
+    ol_S_x = df_off.loc[df_off["OnOffensiveLine"]]["S_x"].sum()
+    ol_S_y = df_off.loc[df_off["OnOffensiveLine"]]["S_y"].sum()
+
+    mom_rb = running_back.iloc[0]["PlayerWeight"] * running_back.iloc[0]["S"]
+    mom_o = df_off.loc[df_off["OnOffensiveLine"]]["PlayerWeight"].sum() * math.sqrt(ol_S_x ** 2 + ol_S_y ** 2)
+    mom_d = df_def.loc[df_def["OnDefensiveLine"]]["PlayerWeight"].sum() * math.sqrt(ol_S_x ** 2 + ol_S_y ** 2)
+
+    d_centroid_x = df_def["X"].mean()
+    d_centroid_y = df_def["Y"].mean()
+    d_compact = math.sqrt(mean((df_def["X"] - d_centroid_x) ** 2 + (df_def["Y"] - d_centroid_y) ** 2))
+
+    d_centroid_x_minus_db = df_def_minus_db["X"].mean()
+    d_centroid_y_minus_db = df_def_minus_db["Y"].mean()
+    d_compact_minus_db = math.sqrt(
+        mean((df_def_minus_db["X"] - d_centroid_x_minus_db) ** 2 + (df_def_minus_db["Y"] - d_centroid_y_minus_db) ** 2))
+
+    o_centroid_x = df_off["X"].mean()
+    o_centroid_y = df_off["Y"].mean()
+    o_compact = math.sqrt(mean((df_off["X"] - o_centroid_x) ** 2 + (df_off["Y"] - o_centroid_y) ** 2))
+
+    o_centroid_x_line = df_off_line["X"].mean()
+    o_centroid_y_line = df_off_line["Y"].mean()
+    o_compact_line = math.sqrt(mean((df_off_line["X"] - o_centroid_x_line) ** 2 + (df_off_line["Y"] - o_centroid_y_line) ** 2))
+
+    df_formations = pd.DataFrame(
+        [[dl_S_x, ol_S_x, dl_S_y, ol_S_y, mom_rb, mom_o, mom_d, d_compact, d_compact_minus_db, o_compact, o_compact_line]],
+        columns=["dl_S_x", "ol_S_x", "dl_S_y", "ol_S_y", "mom_rb", "mom_o", "mom_d",
+                 "d_compact", "d_compact_minus_db", "o_compact", "o_compact_line"])
 
     off_sorted = df_off.sort_values(by=["dist_from_RB"])
     def_sorted = df_def.sort_values(by=["dist_from_RB"])
@@ -145,19 +190,10 @@ def combine_by_pid(pid, df):
         ["Orientation", "Dir_std_2", "dist_from_RB", "ang_from_RB", "radial_speed", "tangential_speed"]]
     def_data = def_sorted[
         ["Orientation", "Dir_std_2", "dist_from_RB", "ang_from_RB", "radial_speed", "tangential_speed"]]
-    return off_data, def_data
+    return off_data, def_data, df_formations
 
 
 def clean_data(df):
-    columns_to_remove = ['GameId', 'DisplayName', 'JerseyNumber', 'Season', 'HomeScoreBeforePlay',
-                         'VisitorScoreBeforePlay',
-                         'OffenseFormation', 'OffensePersonnel', 'DefendersInTheBox', 'DefensePersonnel', 'TimeHandoff',
-                         'TimeSnap', 'PlayerHeight', 'PlayerWeight', 'PlayerBirthDate', 'PlayerCollegeName', 'Position',
-                         'Week', 'Stadium', 'Location', 'StadiumType', 'Turf', 'GameWeather', 'Temperature', 'Humidity',
-                         'WindSpeed', 'WindDirection']
-    for c in columns_to_remove:
-        if c in df.columns:
-            df = df.drop(c, axis=1)
     df.loc[:, "VisitorTeamAbbr"] = df["VisitorTeamAbbr"].map(clean_team_names)
     df.loc[:, "HomeTeamAbbr"] = df["HomeTeamAbbr"].map(clean_team_names)
     df.loc[:, "ToLeft"] = df.apply(lambda x: x["PlayDirection"] == "left", axis=1)
@@ -175,6 +211,8 @@ def clean_data(df):
     df.loc[:, "Dir_std_2"] = df.apply(lambda x: get_dir_std_2(x), axis=1)
     df.loc[:, "X_std_end"] = df.apply(lambda x: get_x_std_end(x), axis=1)
     df.loc[:, "Y_std_end"] = df.apply(lambda x: get_y_std_end(x), axis=1)
+    df.loc[:, "OnOffensiveLine"] = df.apply(lambda x: get_on_offensive_line(x), axis=1)
+    df.loc[:, "OnDefensiveLine"] = df.apply(lambda x: get_on_defensive_line(x), axis=1)
     df = df.dropna(subset=['Dir'])
     df = df.dropna(subset=['Orientation'])
     return df
@@ -184,7 +222,8 @@ def get_output_data(df):
     pids = get_all_pids(df)
     data_by_game = pd.DataFrame()
     for pid in pids:
-        off_data, def_data = combine_by_pid(pid, df)
+        off_data, def_data, formations_data = combine_by_pid(pid, df)
+        formations_data.reset_index(drop=True, inplace=True)
         for col in off_data.columns:
             off_data = off_data.rename(columns={col: "off_" + col})
             def_data = def_data.rename(columns={col: "def_" + col})
@@ -206,7 +245,7 @@ def get_output_data(df):
             rusher_data.loc[:, "X_new"] = rusher_data.apply(lambda x: x["X_std"], axis=1)
             rusher_data.loc[:, "Y_new"] = rusher_data.apply(lambda x: x["Y_std"], axis=1)
             rusher_data.loc[:, "RB_Dis_YL"] = rusher_data.apply(lambda x: abs(x["X_new"] - x["YardLine"]), axis=1)
-            play = pd.concat([play, rusher_data], axis=1)
+            play = pd.concat([play, formations_data, rusher_data], axis=1)
             data_by_game = data_by_game.append(play)
         except ValueError:
             continue
@@ -214,12 +253,18 @@ def get_output_data(df):
 
 
 def convert_to_training_values(data_by_game):
+    def logit(x):
+        return math.log(max(min(x, 1 - 10 ** -16), 10 ** -16) / (1 - max(min(x, 1 - 10 ** -16), 10 ** -16)))
+
     keep = ['dist_from_RB', 'ang_from_RB', 'X_new', 'Y_new',
             'RB_Dis_YL', 'tangential_speed', 'radial_speed',
-            "YardLine", "Quarter", "Down", "Distance", "YardsToEndZone"]
+            "YardLine", "Quarter", "Down", "Distance", "YardsToEndZone"
+            # "dl_S_x", "ol_S_x", "dl_S_y", "ol_S_y", "mom_rb", "mom_o", "mom_d",
+            # "d_compact", "d_compact_minus_db", "o_compact", "o_compact_line"
+            ]
     yards_gained = data_by_game["Yards"]
-    y_train = []
 
+    y_train = []
     cumsum = data_by_game["Yards"].value_counts(normalize=True).sort_index().cumsum()
     for i in range(-15, 100):
         j = i
@@ -229,6 +274,7 @@ def convert_to_training_values(data_by_game):
             cumsum[i] = 0
         cumsum[i] = cumsum[j]
     cumsum = cumsum.sort_index()
+    cumsum = list(map(logit, cumsum.values))
 
     for play in yards_gained.values:
         y = [0 for i in range(115)]
@@ -239,8 +285,7 @@ def convert_to_training_values(data_by_game):
     for c in data_by_game.columns:
         if all(k not in c for k in keep):
             data_by_game = data_by_game.drop(c, axis=1)
-
-    return data_by_game, pd.DataFrame(y_train), cumsum.values
+    return data_by_game, pd.DataFrame(y_train), cumsum
 
 
 def convert_data(df):
