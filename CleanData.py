@@ -259,7 +259,8 @@ def convert_to_training_values(data_by_game):
     keep = ['dist_from_RB', 'ang_from_RB', 'X_new', 'Y_new',
             'RB_Dis_YL', 'tangential_speed', 'radial_speed',
             "YardLine", "Quarter", "Down", "Distance", "YardsToEndZone"
-            "dl_S_x", "ol_S_x", "dl_S_y", "ol_S_y", "mom_rb", "mom_o", "mom_d",
+            "dl_S_x", "ol_S_x", "dl_S_y", "ol_S_y",
+            "mom_rb", "mom_o", "mom_d",
             "d_compact", "d_compact_minus_db", "o_compact", "o_compact_line"
             ]
     yards_gained = data_by_game["Yards"]

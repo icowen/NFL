@@ -20,18 +20,18 @@ class Net:
                  cumsum,
                  number_of_epochs=10,
                  batch_size=100,
-                 load_filename=None):
+                 num_hiddden_nodes=None):
         self.model = tf.keras.Sequential()
         self.x_train = x_train
         self.y_train = y_train
         self.cumsum = cumsum
         self.number_of_epochs = number_of_epochs
         self.batch_size = batch_size
-        self.load_filename = load_filename
-        if self.load_filename:
-            self.load_model()
+        if not num_hiddden_nodes:
+            self.num_hidden_nodes = len(self.x_train[0])
         else:
-            self.set_up_model()
+            self.num_hidden_nodes = num_hiddden_nodes
+        self.set_up_model()
 
     def set_up_model(self):
         num_of_input_neurons = len(self.x_train[0])
@@ -39,12 +39,16 @@ class Net:
         self.model.add(tf.keras.layers.Flatten(input_shape=(num_of_input_neurons,)))
         self.model.add(tf.keras.layers.Dense(num_of_input_neurons,
                                              activation=tf.nn.sigmoid))
+        self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
+                                             activation=tf.nn.sigmoid))
+        self.model.add(tf.keras.layers.Dropout(.3))
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
                            # loss=crps_loss_func,
                            loss=crps_loss(self.cumsum),
                            metrics=['accuracy'])
+        # self.model.summary()
 
     def train(self):
         # validation_overfitting = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
@@ -61,6 +65,7 @@ class Net:
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
+
         for input_play, prediction in zip(x_input, predicted):
             yards_2_endzone = int(input_play[-4])
             for i in range(len(prediction)):
