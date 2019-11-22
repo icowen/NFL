@@ -41,7 +41,14 @@ class Net:
                                              activation=tf.nn.sigmoid))
         self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
                                              activation=tf.nn.sigmoid))
-        self.model.add(tf.keras.layers.Dropout(.3))
+        self.model.add(tf.keras.layers.GaussianDropout(.3))
+        # self.model.add(tf.keras.layers.Dropout(.3))
+        # self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
+        #                                      activation=tf.nn.sigmoid))
+        # # self.model.add(tf.keras.layers.Dropout(.3))
+        # self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
+        #                                      activation=tf.nn.sigmoid))
+        # # self.model.add(tf.keras.layers.Dropout(.3))
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
@@ -51,17 +58,20 @@ class Net:
         # self.model.summary()
 
     def train(self):
-        # validation_overfitting = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
-        #                                                           min_delta=1,
-        #                                                           patience=50,
-        #                                                           verbose=0, mode='min')
-        # callbacks_list = [validation_overfitting]
+        validation_overfitting = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                                  min_delta=1,
+                                                                  patience=50,
+                                                                  verbose=0,
+                                                                  mode='min')
+        callbacks_list = [validation_overfitting]
 
         self.model.fit(self.x_train,
                        self.y_train,
                        validation_split=.2,
                        epochs=self.number_of_epochs,
-                       batch_size=self.batch_size)
+                       batch_size=self.batch_size,
+                       # callbacks=callbacks_list
+                       )
 
     def predict(self, x_input):
         predicted = self.model.predict(x_input)
@@ -89,7 +99,6 @@ def crps_loss(cumsum):
         sum_of_logits = cumsum + logit_of_y_pred
         inverse_logit = K.exp(sum_of_logits) / (1 + K.exp(sum_of_logits))
         inverse_logit = tf.where(tf.math.is_nan(inverse_logit), tf.ones_like(inverse_logit), inverse_logit)
-        # ret = K.switch(y_true >= 1, inverse_logit - 1, inverse_logit)
         ret = tf.where(y_true >= 1, inverse_logit - 1, inverse_logit)
         ret = K.square(ret)
         per_play_loss = K.sum(ret, axis=1)

@@ -1,3 +1,4 @@
+import csv
 import math
 import sys
 
@@ -292,4 +293,12 @@ def convert_data(df):
     df = clean_data(df)
     df = get_output_data(df)
     x_train, y_train, cumsum = convert_to_training_values(df)
+    write_data(x=x_train.values, y=y_train.values, c=[cumsum])
     return x_train, y_train, cumsum
+
+
+def write_data(**kwargs):
+    for k, v in kwargs.items():
+        with open(f'data/{k}.csv', 'w', newline='') as result_file:
+            wr = csv.writer(result_file)
+            wr.writerows(v)

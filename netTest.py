@@ -15,7 +15,7 @@ pd.set_option('display.max_columns', None, 'display.max_rows', None)
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        x_train, y_train, self.cumsum = CleanData.convert_data(pd.read_csv('data/train.csv').head(22 * 100))
+        x_train, y_train, self.cumsum = CleanData.convert_data(pd.read_csv('data/train.csv').head(22 * 10))
         self.x_train = np.asarray(x_train.values)[:-10]
         self.y_train = np.asarray(y_train.values)[:-10]
         print(f'x_train.values: {list(x_train.columns)}')
@@ -24,7 +24,7 @@ class MyTestCase(unittest.TestCase):
                        self.y_train,
                        self.cumsum,
                        batch_size=10,
-                       number_of_epochs=40,
+                       number_of_epochs=50,
                        num_hiddden_nodes=200)
         # for i in range(3):
         #     num_hiddden_nodes = 195 + 5 * i
