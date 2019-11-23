@@ -18,7 +18,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        self.x, self.y, self.cumsum = CleanData.convert_data(pd.read_csv('data/train.csv').head(22*10))
+        self.x, self.y, self.cumsum = CleanData.convert_data(pd.read_csv('data/train.csv'))
         self.x_train = np.asarray(self.x.values)
         self.y_train = np.asarray(self.y.values)
         self.cumsum = np.asarray(self.cumsum, dtype='float')
@@ -77,7 +77,7 @@ class MyTestCase(unittest.TestCase):
         m = tf.keras.models.clone_model(self.net.model)
         m.compile(loss=crps_loss(net_noise))
         best = (0, float('inf'))
-        for _ in range(50):
+        for _ in range(200):
             self.net.train()
             m = tf.keras.models.clone_model(self.net.model)
             m.compile(loss=crps_loss(net_noise))
