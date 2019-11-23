@@ -258,11 +258,11 @@ def convert_to_training_values(data_by_game):
         return math.log(max(min(x, 1 - 10 ** -16), 10 ** -16) / (1 - max(min(x, 1 - 10 ** -16), 10 ** -16)))
 
     keep = ['dist_from_RB', 'ang_from_RB', 'X_new', 'Y_new',
-            'RB_Dis_YL', 'tangential_speed', 'radial_speed',
+            'RB_Dis_YL', # 'tangential_speed', 'radial_speed',
             "YardLine", "Quarter", "Down", "Distance", "YardsToEndZone"
-            "dl_S_x", "ol_S_x", "dl_S_y", "ol_S_y",
-            "mom_rb", "mom_o", "mom_d",
-            "d_compact", "d_compact_minus_db", "o_compact", "o_compact_line"
+            # "dl_S_x", "ol_S_x", "dl_S_y", "ol_S_y",
+            # "mom_rb", "mom_o", "mom_d",
+            # "d_compact", "d_compact_minus_db", "o_compact", "o_compact_line"
             ]
     yards_gained = data_by_game["Yards"]
 
@@ -302,3 +302,15 @@ def write_data(**kwargs):
         with open(f'data/{k}.csv', 'w', newline='') as result_file:
             wr = csv.writer(result_file)
             wr.writerows(v)
+
+
+def get_csv_data():
+    ret = []
+    for name in ["x", "y", "c"]:
+        with open(f'data/{name}.csv', 'r', newline='') as result_file:
+            r = csv.reader(result_file)
+            a = []
+            for row in r:
+                a.append(row)
+        ret.append(a)
+    return ret[0], ret[1], ret[2][0]
