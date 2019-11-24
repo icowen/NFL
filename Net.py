@@ -37,6 +37,9 @@ class Net:
         self.model.add(tf.keras.layers.Flatten(input_shape=(num_of_input_neurons,)))
         self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
                                              activation=tf.nn.sigmoid))
+        for i in range(self.number_of_epochs):
+            self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
+                                                 activation=tf.nn.sigmoid))
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
         self.model.compile(optimizer='adam',
@@ -112,4 +115,3 @@ def crps_loss_func(y_true, y_pred):
 # 
 # logit(p)= log(p/(1-p))  
 # logit^{-1}(x)= e^x/(1+e^x)
-

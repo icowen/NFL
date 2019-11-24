@@ -23,8 +23,8 @@ class MyTestCase(unittest.TestCase):
         # self.y_train = np.asarray(self.y.values)
         # self.cumsum = np.asarray(self.cumsum, dtype='float')
         self.x, self.y, self.cumsum = CleanData.get_csv_data()
-        self.x_train = np.asarray(self.x, dtype='float')
-        self.y_train = np.asarray(self.y, dtype='float')
+        self.x_train = np.asarray(self.x, dtype='float')[:-100*22]
+        self.y_train = np.asarray(self.y, dtype='float')[:-100*22]
         self.cumsum = np.asarray(self.cumsum, dtype='float')
         # self.net = Net(self.x_train,
         #                self.y_train,
@@ -41,15 +41,15 @@ class MyTestCase(unittest.TestCase):
         #     self.net_noise.append(play)
         # self.net.update_loss(avg_of_play_no_noise=np.asarray(self.net_noise))
 
+
     def test_for_hidden_nodes(self):
         models = []
-        for z in range(100):
-            nodes = (z+1)*5
+        for layers in range(10):
             net = Net(self.x_train,
                       self.y_train,
                       self.cumsum,
-                      number_of_epochs=300,
-                      num_hiddden_nodes=nodes)
+                      number_of_epochs=layers,
+                      num_hiddden_nodes=5)
             initial_net = tf.keras.models.clone_model(net.model)
             initial_net_config = net.model.predict(self.x_train)
             net_noise = []
@@ -59,8 +59,8 @@ class MyTestCase(unittest.TestCase):
                 play = self.cumsum - play
                 net_noise.append(play)
             net.update_loss(avg_of_play_no_noise=np.asarray(net_noise))
-            test_data_x = np.asarray(self.x, dtype='float')[-20:]
-            test_data_y = np.asarray(self.y, dtype='float')[-20:]
+            test_data_x = np.asarray(self.x, dtype='float')[-50*22:]
+            test_data_y = np.asarray(self.y, dtype='float')[-50*22:]
             net_noise = initial_net.predict(test_data_x)
             for j in range(len(net_noise)):
                 play = net_noise[j]
@@ -75,7 +75,7 @@ class MyTestCase(unittest.TestCase):
                 m = tf.keras.models.clone_model(net.model)
                 m.compile(loss=crps_loss(net_noise))
                 score = m.evaluate(test_data_x, test_data_y)
-                best = (_, score, m, nodes) if score < best[1] else best
+                best = (_, score, m, layers) if score < best[1] else best
                 print(f'Epoch: {_} - val_loss: {score}\n')
             m = best[2]
             models.append(best)
@@ -94,7 +94,7 @@ class MyTestCase(unittest.TestCase):
                     if prediction[i + 1] < prediction[i]:
                         prediction[i + 1] = prediction[i]
             prediction = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
-            with open(f'out/{nodes}_nodes_{datetime.datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
+            with open(f'out/{layers}_layers_{datetime.datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
                 f.write(f'best: {best}\n')
                 for x, y in zip(test_data_y, prediction):
                     i = -99
@@ -118,37 +118,37 @@ class MyTestCase(unittest.TestCase):
     #         play = list(map(lambda x: math.log(x / (1 - x)), play))
     #         play = self.cumsum - play
     #         net_noise[i] = play
-    #     prediction = self.net.predict(test_data_x, net_noise, self.cumsum)
-    #     m = tf.keras.models.clone_model(self.net.model)
-    #     m.compile(loss=crps_loss(net_noise))
-    #     best = (0, float('inf'))
-    #     for _ in range(10):
-    #         self.net.train()
-    #         m = tf.keras.models.clone_model(self.net.model)
-    #         m.compile(loss=crps_loss(net_noise))
-    #         score = m.evaluate(test_data_x, test_data_y)
-    #         best = (_, score, m) if score < best[1] else best
-    #         print(f'Epoch: {_} - val_loss: {score}\n')
-    #     print(f'best: {best}')
-    #     m = best[2]
-    #     predicted = m.predict(test_data_x)
-    #     for input_play, prediction, n in zip(test_data_x, predicted, net_noise):
-    #         yards_2_endzone = int(input_play[-4])
-    #         for i in range(len(prediction)):
-    #             p = prediction[i]
-    #             p = math.log(p / (1 - p))
-    #             p -= self.cumsum[i] + n[i]
-    #             p = math.exp(p) / (1 + math.exp(p))
-    #             prediction[i] = 1 - p
-    #         for i in range(yards_2_endzone + 15, len(prediction)):
-    #             prediction[i] = 1
-    #         for i in range(len(prediction) - 1):
-    #             if prediction[i + 1] < prediction[i]:
-    #                 prediction[i + 1] = prediction[i]
-    #     prediction = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
+    #
+    #     predicted = self.net.predict(test_data_x, net_noise, self.cumsum)
+    #     # m = tf.keras.models.clone_model(self.net.model)
+    #     # m.compile(loss=crps_loss(net_noise))
+    #     # best = (0, float('inf'))
+    #     # for _ in range(10):
+    #     #     self.net.train()
+    #     #     m = tf.keras.models.clone_model(self.net.model)
+    #     #     m.compile(loss=crps_loss(net_noise))
+    #     #     score = m.evaluate(test_data_x, test_data_y)
+    #     #     best = (_, score, m) if score < best[1] else best
+    #     #     print(f'Epoch: {_} - val_loss: {score}\n')
+    #     # print(f'best: {best}')
+    #     # m = best[2]
+    #     # predicted = m.predict(test_data_x)
+    #     # for input_play, prediction, n in zip(test_data_x, predicted, net_noise):
+    #     #     yards_2_endzone = int(input_play[-4])
+    #     #     for i in range(len(prediction)):
+    #     #         p = prediction[i]
+    #     #         p = math.log(p / (1 - p))
+    #     #         p -= self.cumsum[i] + n[i]
+    #     #         p = math.exp(p) / (1 + math.exp(p))
+    #     #         prediction[i] = 1 - p
+    #     #     for i in range(yards_2_endzone + 15, len(prediction)):
+    #     #         prediction[i] = 1
+    #     #     for i in range(len(prediction) - 1):
+    #     #         if prediction[i + 1] < prediction[i]:
+    #     #             prediction[i + 1] = prediction[i]
+    #     # predicted = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
     #     with open(f'out/{datetime.datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
-    #         f.write(f'best: {best}\n')
-    #         for x, y in zip(test_data_y, prediction):
+    #         for x, y in zip(test_data_y, predicted):
     #             i = -99
     #             x = np.pad(x, (84, 0), constant_values=0)
     #             for a, b in zip(x, y):
