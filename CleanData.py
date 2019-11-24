@@ -293,7 +293,7 @@ def convert_data(df):
     df = clean_data(df)
     df = get_output_data(df)
     x_train, y_train, cumsum = convert_to_training_values(df)
-    write_data(x=x_train.values, y=y_train.values, c=[cumsum])
+    # write_data(x=x_train.values, y=y_train.values, c=[cumsum])
     return x_train, y_train, cumsum
 
 

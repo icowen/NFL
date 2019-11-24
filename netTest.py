@@ -18,7 +18,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        self.x, self.y, self.cumsum = CleanData.convert_data(pd.read_csv('data/train.csv'))
+        # self.x, self.y, self.cumsum = CleanData.convert_data(pd.read_csv('data/train.csv'))
         # self.x_train = np.asarray(self.x.values)
         # self.y_train = np.asarray(self.y.values)
         # self.cumsum = np.asarray(self.cumsum, dtype='float')
@@ -40,37 +40,16 @@ class MyTestCase(unittest.TestCase):
         #     play = self.cumsum - play
         #     self.net_noise.append(play)
         # self.net.update_loss(avg_of_play_no_noise=np.asarray(self.net_noise))
-        # for i in range(3):
-        #     num_hiddden_nodes = 195 + 5 * i
-        #     print(f'Training net with {num_hiddden_nodes} hidden nodes')
-        #     self.net = Net(self.x_train,
-        #                    self.y_train,
-        #                    self.cumsum,
-        #                    batch_size=10,
-        #                    number_of_epochs=300,
-        #                    num_hiddden_nodes=num_hiddden_nodes)
-        #     self.net.train()
-        #     avg_by_play = self.net.predict(np.asarray(self.x_train[-10:]))
-        #     c = np.pad(self.cumsum, (84, 0), constant_values=0)
-        #     with open(f'out/{num_hiddden_nodes}_hidden_nodes.txt', 'w') as f:
-        #         for x, y in zip(self.y_train[-10:], avg_by_play):
-        #             i = -99
-        #             x = np.pad(x, (84, 0), constant_values=0)
-        #             f.write(f'LOSS: {crps_loss(c)(tf.convert_to_tensor([x]), tf.convert_to_tensor(y))}\n')
-        #             # f.write(f'LOSS: {crps_loss_func(tf.convert_to_tensor([x]), tf.convert_to_tensor(y))}\n')
-        #             for a, b in zip(x, y):
-        #                 f.write('i: {: 3d}; Actual: {:d}; Predicted: {:f}\n'.format(i, a, b))
-        #                 i += 1
-        #             f.write('\n-------------------------\n')
 
     def test_for_hidden_nodes(self):
         models = []
-        for i in range(500):
+        for z in range(100):
+            nodes = (z+1)*5
             net = Net(self.x_train,
                       self.y_train,
                       self.cumsum,
-                      number_of_epochs=1000,
-                      num_hiddden_nodes=i*5 + 5)
+                      number_of_epochs=300,
+                      num_hiddden_nodes=nodes)
             initial_net = tf.keras.models.clone_model(net.model)
             initial_net_config = net.model.predict(self.x_train)
             net_noise = []
@@ -83,12 +62,11 @@ class MyTestCase(unittest.TestCase):
             test_data_x = np.asarray(self.x, dtype='float')[-20:]
             test_data_y = np.asarray(self.y, dtype='float')[-20:]
             net_noise = initial_net.predict(test_data_x)
-            for i in range(len(net_noise)):
-                play = net_noise[i]
+            for j in range(len(net_noise)):
+                play = net_noise[j]
                 play = list(map(lambda x: math.log(x / (1 - x)), play))
                 play = self.cumsum - play
-                net_noise[i] = play
-            prediction = net.predict(test_data_x, net_noise, self.cumsum)
+                net_noise[j] = play
             m = tf.keras.models.clone_model(net.model)
             m.compile(loss=crps_loss(net_noise))
             best = (0, float('inf'))
@@ -97,10 +75,26 @@ class MyTestCase(unittest.TestCase):
                 m = tf.keras.models.clone_model(net.model)
                 m.compile(loss=crps_loss(net_noise))
                 score = m.evaluate(test_data_x, test_data_y)
-                best = (_, score) if score < best[1] else best
+                best = (_, score, m, nodes) if score < best[1] else best
                 print(f'Epoch: {_} - val_loss: {score}\n')
-            print(f'best: {best}')
-            with open(f'out/{datetime.datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
+            m = best[2]
+            models.append(best)
+            predicted = m.predict(test_data_x)
+            for input_play, prediction, n in zip(test_data_x, predicted, net_noise):
+                yards_2_endzone = int(input_play[-4])
+                for i in range(len(prediction)):
+                    p = prediction[i]
+                    p = math.log(p / (1 - p))
+                    p -= self.cumsum[i] + n[i]
+                    p = math.exp(p) / (1 + math.exp(p))
+                    prediction[i] = 1 - p
+                for i in range(yards_2_endzone + 15, len(prediction)):
+                    prediction[i] = 1
+                for i in range(len(prediction) - 1):
+                    if prediction[i + 1] < prediction[i]:
+                        prediction[i + 1] = prediction[i]
+            prediction = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
+            with open(f'out/{nodes}_nodes_{datetime.datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
                 f.write(f'best: {best}\n')
                 for x, y in zip(test_data_y, prediction):
                     i = -99
@@ -109,11 +103,10 @@ class MyTestCase(unittest.TestCase):
                         f.write('i: {: 3d}; Actual: {:f}; Predicted: {:f}\n'.format(i, a, b))
                         i += 1
                     f.write('\n-------------------------\n')
-            models.append(best)
+
         print(models)
-        models = models.sort(key=lambda x: x[1])
+        models.sort(key=lambda q: q[1])
         print(models[0])
-        print(models[-1])
 
     # def test_train_and_predict(self):
     #     # self.net.train()
@@ -129,14 +122,30 @@ class MyTestCase(unittest.TestCase):
     #     m = tf.keras.models.clone_model(self.net.model)
     #     m.compile(loss=crps_loss(net_noise))
     #     best = (0, float('inf'))
-    #     for _ in range(200):
+    #     for _ in range(10):
     #         self.net.train()
     #         m = tf.keras.models.clone_model(self.net.model)
     #         m.compile(loss=crps_loss(net_noise))
     #         score = m.evaluate(test_data_x, test_data_y)
-    #         best = (_, score) if score < best[1] else best
+    #         best = (_, score, m) if score < best[1] else best
     #         print(f'Epoch: {_} - val_loss: {score}\n')
     #     print(f'best: {best}')
+    #     m = best[2]
+    #     predicted = m.predict(test_data_x)
+    #     for input_play, prediction, n in zip(test_data_x, predicted, net_noise):
+    #         yards_2_endzone = int(input_play[-4])
+    #         for i in range(len(prediction)):
+    #             p = prediction[i]
+    #             p = math.log(p / (1 - p))
+    #             p -= self.cumsum[i] + n[i]
+    #             p = math.exp(p) / (1 + math.exp(p))
+    #             prediction[i] = 1 - p
+    #         for i in range(yards_2_endzone + 15, len(prediction)):
+    #             prediction[i] = 1
+    #         for i in range(len(prediction) - 1):
+    #             if prediction[i + 1] < prediction[i]:
+    #                 prediction[i + 1] = prediction[i]
+    #     prediction = list(map(lambda x: np.pad(x, (84, 0), constant_values=0), predicted))
     #     with open(f'out/{datetime.datetime.now().strftime("%m-%d-%y_%H_%M_%S")}.txt', 'w') as f:
     #         f.write(f'best: {best}\n')
     #         for x, y in zip(test_data_y, prediction):

@@ -35,7 +35,7 @@ class Net:
         num_of_input_neurons = len(self.x_train[0])
         num_of_output_neurons = len(self.y_train[0])
         self.model.add(tf.keras.layers.Flatten(input_shape=(num_of_input_neurons,)))
-        self.model.add(tf.keras.layers.Dense(num_of_input_neurons,
+        self.model.add(tf.keras.layers.Dense(self.num_hidden_nodes,
                                              activation=tf.nn.sigmoid))
         self.model.add(tf.keras.layers.Dense(num_of_output_neurons,
                                              activation=tf.nn.sigmoid))
